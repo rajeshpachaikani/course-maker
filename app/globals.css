@@ -1,26 +1,87 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --cf-bg: #ffffff;
+  --cf-fg: #0a0a0a;
+  --cf-surface: #ffffff;
+  --cf-muted-fg: #57606a;
+  --cf-border: #e5e7eb;
+  --cf-primary: #111827;
+  --cf-primary-fg: #ffffff;
+  --cf-accent: #2563eb;
+  --cf-accent-fg: #ffffff;
+  --cf-radius: 0.5rem;
+  --cf-font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --cf-font-heading: var(--cf-font-sans);
+  --cf-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-cf-bg: var(--cf-bg);
+  --color-cf-fg: var(--cf-fg);
+  --color-cf-surface: var(--cf-surface);
+  --color-cf-muted-fg: var(--cf-muted-fg);
+  --color-cf-border: var(--cf-border);
+  --color-cf-primary: var(--cf-primary);
+  --color-cf-primary-fg: var(--cf-primary-fg);
+  --color-cf-accent: var(--cf-accent);
+  --color-cf-accent-fg: var(--cf-accent-fg);
+  --font-sans: var(--cf-font-sans);
+  --font-heading: var(--cf-font-heading);
+  --font-mono: var(--cf-font-mono);
+  --radius: var(--cf-radius);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--cf-font-sans);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--cf-font-heading);
+}
+
+.cf-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--cf-radius);
+  background: var(--cf-primary);
+  color: var(--cf-primary-fg);
+  border: 1px solid var(--cf-primary);
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+.cf-btn-primary:hover {
+  opacity: 0.9;
+}
+.cf-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cf-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--cf-radius);
+  background: var(--cf-surface);
+  color: var(--cf-fg);
+  border: 1px solid var(--cf-border);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.cf-btn-secondary:hover {
+  background: var(--cf-bg);
 }

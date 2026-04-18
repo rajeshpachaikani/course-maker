@@ -1,0 +1,205 @@
+import "server-only";
+import { cacheTag, cacheLife } from "next/cache";
+import { db } from "@/lib/db";
+import { themeSettings, siteSettings } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+
+export const THEME_TAG = "theme";
+export const SITE_TAG = "site-settings";
+
+export interface ThemeColors {
+  bg: string;
+  fg: string;
+  surface: string;
+  mutedFg: string;
+  border: string;
+  primary: string;
+  primaryFg: string;
+  accent: string;
+  accentFg: string;
+}
+
+export interface ThemeFonts {
+  sans: string;
+  heading?: string;
+  mono?: string;
+}
+
+export interface ResolvedTheme {
+  colors: ThemeColors;
+  fonts: ThemeFonts;
+  borderRadius: string;
+  customCss: string | null;
+}
+
+const DEFAULT_THEME: ResolvedTheme = {
+  colors: {
+    bg: "#ffffff",
+    fg: "#0a0a0a",
+    surface: "#ffffff",
+    mutedFg: "#57606a",
+    border: "#e5e7eb",
+    primary: "#111827",
+    primaryFg: "#ffffff",
+    accent: "#2563eb",
+    accentFg: "#ffffff",
+  },
+  fonts: {
+    sans: "Inter, ui-sans-serif, system-ui, sans-serif",
+    heading: "Inter, ui-sans-serif, system-ui, sans-serif",
+    mono: "ui-monospace, SFMono-Regular, Menlo, monospace",
+  },
+  borderRadius: "0.5rem",
+  customCss: null,
+};
+
+export async function loadTheme(): Promise<ResolvedTheme> {
+  "use cache";
+  cacheTag(THEME_TAG);
+  cacheLife("max");
+  const rows = await db
+    .select()
+    .from(themeSettings)
+    .where(eq(themeSettings.id, "singleton"))
+    .limit(1);
+  const row = rows[0];
+  if (!row) return DEFAULT_THEME;
+  const colors = (row.colors as Partial<ThemeColors>) ?? {};
+  const fonts = (row.fonts as Partial<ThemeFonts>) ?? {};
+  return {
+    colors: { ...DEFAULT_THEME.colors, ...colors },
+    fonts: { ...DEFAULT_THEME.fonts, ...fonts },
+    borderRadius: row.borderRadius ?? DEFAULT_THEME.borderRadius,
+    customCss: row.customCss,
+  };
+}
+
+export async function loadSiteSettings() {
+  "use cache";
+  cacheTag(SITE_TAG);
+  cacheLife("max");
+  const rows = await db
+    .select()
+    .from(siteSettings)
+    .where(eq(siteSettings.id, "singleton"))
+    .limit(1);
+  return (
+    rows[0] ?? {
+      id: "singleton" as const,
+      name: "CourseForge",
+      tagline: null,
+      logoUrl: null,
+      faviconUrl: null,
+      rawHtmlBlockEnabled: false,
+      googleOauthEnabled: false,
+      updatedAt: new Date(),
+    }
+  );
+}
+
+type SiteSettingsPatch = {
+  name?: string;
+  tagline?: string | null;
+  logoUrl?: string | null;
+  faviconUrl?: string | null;
+  rawHtmlBlockEnabled?: boolean;
+  googleOauthEnabled?: boolean;
+};
+
+export async function upsertSiteSettings(patch: SiteSettingsPatch) {
+  const existing = await db
+    .select()
+    .from(siteSettings)
+    .where(eq(siteSettings.id, "singleton"))
+    .limit(1);
+  if (existing[0]) {
+    await db
+      .update(siteSettings)
+      .set({ ...patch, updatedAt: new Date() })
+      .where(eq(siteSettings.id, "singleton"));
+  } else {
+    await db.insert(siteSettings).values({
+      id: "singleton",
+      name: patch.name ?? "CourseForge",
+      tagline: patch.tagline ?? null,
+      logoUrl: patch.logoUrl ?? null,
+      faviconUrl: patch.faviconUrl ?? null,
+      rawHtmlBlockEnabled: patch.rawHtmlBlockEnabled ?? false,
+      googleOauthEnabled: patch.googleOauthEnabled ?? false,
+    });
+  }
+}
+
+type ThemePatch = {
+  colors?: Partial<ThemeColors>;
+  fonts?: Partial<ThemeFonts>;
+  borderRadius?: string;
+  customCss?: string | null;
+};
+
+export async function upsertTheme(patch: ThemePatch) {
+  const current = await loadThemeUncached();
+  const nextColors = { ...current.colors, ...(patch.colors ?? {}) };
+  const nextFonts = { ...current.fonts, ...(patch.fonts ?? {}) };
+  const existing = await db
+    .select()
+    .from(themeSettings)
+    .where(eq(themeSettings.id, "singleton"))
+    .limit(1);
+  const payload = {
+    colors: nextColors,
+    fonts: nextFonts,
+    borderRadius: patch.borderRadius ?? current.borderRadius,
+    customCss:
+      patch.customCss !== undefined ? patch.customCss : current.customCss,
+    updatedAt: new Date(),
+  };
+  if (existing[0]) {
+    await db
+      .update(themeSettings)
+      .set(payload)
+      .where(eq(themeSettings.id, "singleton"));
+  } else {
+    await db.insert(themeSettings).values({ id: "singleton", ...payload });
+  }
+}
+
+async function loadThemeUncached(): Promise<ResolvedTheme> {
+  const rows = await db
+    .select()
+    .from(themeSettings)
+    .where(eq(themeSettings.id, "singleton"))
+    .limit(1);
+  const row = rows[0];
+  if (!row) return DEFAULT_THEME;
+  const colors = (row.colors as Partial<ThemeColors>) ?? {};
+  const fonts = (row.fonts as Partial<ThemeFonts>) ?? {};
+  return {
+    colors: { ...DEFAULT_THEME.colors, ...colors },
+    fonts: { ...DEFAULT_THEME.fonts, ...fonts },
+    borderRadius: row.borderRadius ?? DEFAULT_THEME.borderRadius,
+    customCss: row.customCss,
+  };
+}
+
+export { loadThemeUncached };
+
+export function themeToCssVars(theme: ResolvedTheme): string {
+  const c = theme.colors;
+  const f = theme.fonts;
+  return `:root {
+  --cf-bg: ${c.bg};
+  --cf-fg: ${c.fg};
+  --cf-surface: ${c.surface};
+  --cf-muted-fg: ${c.mutedFg};
+  --cf-border: ${c.border};
+  --cf-primary: ${c.primary};
+  --cf-primary-fg: ${c.primaryFg};
+  --cf-accent: ${c.accent};
+  --cf-accent-fg: ${c.accentFg};
+  --cf-radius: ${theme.borderRadius};
+  --cf-font-sans: ${f.sans};
+  --cf-font-heading: ${f.heading ?? f.sans};
+  --cf-font-mono: ${f.mono ?? "ui-monospace, monospace"};
+}`;
+}

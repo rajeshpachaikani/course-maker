@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone",
+  cacheComponents: true,
+  typedRoutes: true,
+  experimental: {
+    instantNavigationDevToolsToggle: true,
+  },
 };
 
 export default nextConfig;
