@@ -110,36 +110,50 @@ export function VideoUpload({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {currentVideoId ? (
-        <div className="flex flex-col gap-2 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] p-4 text-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Video attached</div>
-              <div className="mt-0.5 font-mono text-xs text-[var(--cf-muted-fg)]">
+        <div className="upload-item">
+          <div className="upload-item-row">
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                background: "var(--paper-2)",
+                borderRadius: 6,
+                display: "grid",
+                placeItems: "center",
+                fontSize: 14,
+              }}
+            >
+              🎬
+            </div>
+            <div className="upload-item-name">
+              <div style={{ fontWeight: 600, color: "var(--ink)" }}>
+                Video attached
+              </div>
+              <div
+                className="mono-label"
+                style={{ fontSize: 10.5, marginTop: 2 }}
+              >
                 {currentVideoId}
+                {currentDurationSec
+                  ? ` · ${formatDuration(currentDurationSec)}`
+                  : ""}
               </div>
             </div>
             <button
               type="button"
               onClick={onRemoveClick}
-              className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] px-3 py-1.5 text-xs text-[var(--cf-muted-fg)] hover:text-[var(--cf-fg)]"
+              className="btn btn-ghost"
+              style={{ fontSize: 11, padding: "5px 10px" }}
             >
               Remove
             </button>
           </div>
-          {currentDurationSec ? (
-            <div className="text-xs text-[var(--cf-muted-fg)]">
-              Duration: {formatDuration(currentDurationSec)}
-            </div>
-          ) : null}
         </div>
       ) : null}
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">
-          {currentVideoId ? "Replace video" : "Upload video"}
-        </span>
+      <label className="upload-zone" style={{ cursor: "pointer", margin: 0 }}>
         <input
           ref={inputRef}
           type="file"
@@ -149,29 +163,73 @@ export function VideoUpload({
             const f = e.target.files?.[0];
             if (f) handleFile(f);
           }}
-          className="text-sm"
+          style={{ display: "none" }}
         />
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        <b>{currentVideoId ? "Drop to replace video" : "Drop video file here"}</b>
+        <div
+          style={{
+            fontFamily: "var(--mono)",
+            fontSize: 11,
+            letterSpacing: "0.04em",
+            marginTop: 4,
+          }}
+        >
+          MP4 / MOV · auto-transcoded to HLS
+        </div>
       </label>
 
       {progress !== null ? (
-        <div className="flex flex-col gap-1">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--cf-border)]">
-            <div
-              className="h-full bg-[var(--cf-accent)] transition-all"
-              style={{ width: `${progress}%` }}
-            />
+        <div className="upload-item">
+          <div className="upload-item-row">
+            <div className="upload-item-name">
+              <div style={{ fontWeight: 600, color: "var(--ink)" }}>
+                {status ?? "Uploading"}
+              </div>
+            </div>
+            <div className="upload-item-pct">{progress}%</div>
           </div>
-          <div className="text-xs text-[var(--cf-muted-fg)]">
-            {status ?? `${progress}%`}
-            {progress !== null && status ? ` · ${progress}%` : ""}
+          <div className="upload-bar">
+            <div
+              className="upload-bar-fill"
+              style={{
+                width: `${progress}%`,
+                background:
+                  progress === 100
+                    ? "oklch(0.7 0.2 160)"
+                    : "var(--brand-grad)",
+              }}
+            />
           </div>
         </div>
       ) : status ? (
-        <div className="text-xs text-[var(--cf-muted-fg)]">{status}</div>
+        <div className="mono-label" style={{ fontSize: 11 }}>
+          {status}
+        </div>
       ) : null}
 
       {error ? (
-        <div className="text-sm text-red-600" role="alert">
+        <div
+          role="alert"
+          style={{
+            color: "oklch(0.75 0.2 25)",
+            fontSize: 13,
+            fontFamily: "var(--mono)",
+          }}
+        >
           {error}
         </div>
       ) : null}
@@ -183,6 +241,7 @@ function formatDuration(sec: number): string {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
   const s = Math.floor(sec % 60);
-  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  if (h > 0)
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   return `${m}:${String(s).padStart(2, "0")}`;
 }

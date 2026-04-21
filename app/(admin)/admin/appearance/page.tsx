@@ -6,15 +6,19 @@ export const metadata = { title: "Appearance" };
 export default async function AdminAppearancePage() {
   const theme = await loadTheme();
   return (
-    <div className="flex flex-col gap-6 max-w-4xl">
-      <header>
-        <h1 className="text-2xl font-semibold">Appearance</h1>
-        <p className="text-sm text-[var(--cf-muted-fg)]">
-          Colors, fonts, radius, and custom CSS. Changes are applied across the
-          public site and dashboard on next page load.
-        </p>
-      </header>
-      <AppearanceForm initial={theme} />
-    </div>
+    <>
+      <div className="admin-header">
+        <div>
+          <h1>Theme & brand</h1>
+          <div className="admin-header-sub">
+            — Colors, typography, radius, custom CSS
+          </div>
+        </div>
+      </div>
+
+      <div className="admin-section">
+        <AppearanceForm initial={theme} />
+      </div>
+    </>
   );
 }

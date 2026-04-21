@@ -3,10 +3,8 @@ import Link from "next/link";
 import { getCourseTree } from "@/lib/courses";
 import { CourseMetaForm } from "./course-meta-form";
 import { ModuleList } from "./module-list";
-import {
-  createModuleAction,
-  deleteCourseAction,
-} from "../actions";
+import { createModuleAction } from "../actions";
+import { DeleteCourseButton } from "../delete-course-button";
 
 export const metadata = { title: "Edit course" };
 
@@ -19,62 +17,112 @@ export default async function CourseEditPage({
   const tree = await getCourseTree(courseId);
   if (!tree) notFound();
 
+  const lessonCount = tree.modules.reduce(
+    (acc, m) => acc + m.lessons.length,
+    0,
+  );
+
   return (
-    <div className="flex flex-col gap-8 max-w-4xl">
-      <header className="flex items-start justify-between gap-4">
+    <>
+      <div className="admin-header">
         <div>
           <Link
             href="/admin/courses"
-            className="text-xs text-[var(--cf-muted-fg)] hover:underline"
+            className="mono-label"
+            style={{ textDecoration: "none" }}
           >
             ← Courses
           </Link>
-          <h1 className="mt-1 text-2xl font-semibold">{tree.course.title}</h1>
-          <p className="text-sm text-[var(--cf-muted-fg)]">
-            Slug: <code>{tree.course.slug}</code>
-          </p>
+          <h1 style={{ marginTop: 4 }}>{tree.course.title}</h1>
+          <div className="admin-header-sub">
+            — /{tree.course.slug} · {tree.modules.length}{" "}
+            {tree.modules.length === 1 ? "module" : "modules"} · {lessonCount}{" "}
+            {lessonCount === 1 ? "lesson" : "lessons"} ·{" "}
+            {tree.course.published ? "Published" : "Draft"}
+          </div>
         </div>
-        <form action={deleteCourseAction}>
-          <input type="hidden" name="id" value={tree.course.id} />
-          <button
-            type="submit"
-            className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] px-3 py-1.5 text-xs text-[var(--cf-muted-fg)] hover:text-[var(--cf-fg)]"
+        <div className="admin-header-actions">
+          <Link
+            href={`/courses/${tree.course.slug}` as `/courses/${string}`}
+            className="btn btn-ghost"
+            target="_blank"
           >
-            Delete course
-          </button>
-        </form>
-      </header>
-
-      <CourseMetaForm course={tree.course} />
-
-      <section className="flex flex-col gap-4 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6">
-        <div>
-          <h2 className="text-lg font-semibold">Modules</h2>
-          <p className="text-sm text-[var(--cf-muted-fg)]">
-            Drag to reorder. Click a module to manage lessons.
-          </p>
+            View ↗
+          </Link>
+          <DeleteCourseButton id={tree.course.id} title={tree.course.title} />
         </div>
-        <form
-          action={createModuleAction}
-          className="flex flex-col gap-2 sm:flex-row sm:items-end"
-        >
-          <input type="hidden" name="courseId" value={tree.course.id} />
-          <label className="flex flex-1 flex-col gap-1 text-sm">
-            <span className="font-medium">New module title</span>
-            <input
-              type="text"
-              name="title"
-              required
-              placeholder="Module name"
-              className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-sm"
-            />
-          </label>
-          <button type="submit" className="cf-btn-primary">
-            Add module
-          </button>
-        </form>
-        <ModuleList courseId={tree.course.id} modules={tree.modules} />
-      </section>
-    </div>
+      </div>
+
+      <div className="admin-section">
+        <div className="editor-grid">
+          <div>
+            <CourseMetaForm course={tree.course} />
+          </div>
+
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "end",
+                justifyContent: "space-between",
+                marginBottom: 14,
+              }}
+            >
+              <div>
+                <div className="mono-label">— Curriculum</div>
+                <h2
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontSize: 26,
+                    margin: "6px 0 0",
+                    fontWeight: 600,
+                    letterSpacing: "-0.015em",
+                    color: "var(--ink)",
+                  }}
+                >
+                  Modules{" "}
+                  <span
+                    style={{
+                      fontStyle: "italic",
+                      color: "var(--ink-3)",
+                      fontSize: 20,
+                      fontWeight: 500,
+                    }}
+                  >
+                    — reorder with arrows
+                  </span>
+                </h2>
+              </div>
+            </div>
+
+            <form
+              action={createModuleAction}
+              style={{
+                display: "flex",
+                gap: 8,
+                marginBottom: 16,
+                alignItems: "end",
+              }}
+            >
+              <input type="hidden" name="courseId" value={tree.course.id} />
+              <div className="field" style={{ flex: 1, margin: 0 }}>
+                <label>NEW MODULE TITLE</label>
+                <input
+                  type="text"
+                  name="title"
+                  required
+                  placeholder="Module name"
+                />
+              </div>
+              <button type="submit" className="btn btn-ink">
+                + Add module
+              </button>
+            </form>
+
+            <ModuleList courseId={tree.course.id} modules={tree.modules} />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

@@ -46,17 +46,22 @@ export function BuyButton({
   }
 
   return (
-    <div className="flex flex-col items-end gap-2">
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <button
         type="button"
         onClick={buy}
         disabled={pending}
-        className="cf-btn-primary"
+        className="btn btn-primary"
+        style={{ width: "100%", justifyContent: "center", padding: "14px 20px", fontSize: 15 }}
       >
-        {pending ? "Working…" : isFree ? "Enroll for free" : "Buy now"}
+        {pending ? "Working…" : isFree ? "Enroll for free →" : "Enroll now →"}
       </button>
       {error ? (
-        <div className="text-xs text-red-600" role="alert">
+        <div
+          role="alert"
+          className="mono-label"
+          style={{ color: "var(--danger)", textTransform: "none", letterSpacing: 0 }}
+        >
           {error}
         </div>
       ) : null}

@@ -32,7 +32,6 @@ export async function saveSiteSettingsAction(formData: FormData) {
     tagline: nullableText(formData.get("tagline")),
     logoUrl: nullableText(formData.get("logoUrl")),
     faviconUrl: nullableText(formData.get("faviconUrl")),
-    rawHtmlBlockEnabled: asBool(formData.get("rawHtmlBlockEnabled")),
     googleOauthEnabled: asBool(formData.get("googleOauthEnabled")),
   });
   updateTag(SITE_TAG);

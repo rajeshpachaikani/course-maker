@@ -1,112 +1,181 @@
 import Link from "next/link";
 import { listCoursesAdmin } from "@/lib/courses";
-import { createCourseAction, deleteCourseAction } from "./actions";
+import { createCourseAction } from "./actions";
+import { DeleteCourseButton } from "./delete-course-button";
 
 export const metadata = { title: "Courses" };
+
+const THUMB_GRADS = [
+  "bg-clay",
+  "bg-plum",
+  "bg-ochre",
+  "bg-teal",
+  "bg-moss",
+  "bg-rust",
+  "bg-pink-grad",
+  "bg-brick",
+  "bg-sage",
+];
 
 function formatPrice(cents: number, currency: string, isFree: boolean) {
   if (isFree) return "Free";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
+    maximumFractionDigits: 0,
   }).format(cents / 100);
 }
 
 export default async function AdminCoursesPage() {
   const courses = await listCoursesAdmin();
+  const published = courses.filter((c) => c.published).length;
+  const draft = courses.length - published;
 
   return (
-    <div className="flex flex-col gap-8 max-w-4xl">
-      <header className="flex items-start justify-between gap-4">
+    <>
+      <div className="admin-header">
         <div>
-          <h1 className="text-2xl font-semibold">Courses</h1>
-          <p className="text-sm text-[var(--cf-muted-fg)]">
-            Author courses, modules, and lessons.
-          </p>
+          <h1>Courses</h1>
+          <div className="admin-header-sub">
+            — {courses.length} total · {published} published · {draft} draft
+          </div>
         </div>
-      </header>
+      </div>
 
-      <section className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6">
-        <h2 className="text-base font-semibold">Create course</h2>
-        <form
-          action={createCourseAction}
-          className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"
+      <div className="admin-section">
+        <section
+          className="card"
+          style={{
+            background: "var(--paper-2)",
+            border: "1px solid var(--hair)",
+            borderRadius: "var(--radius-lg)",
+            padding: 22,
+            marginBottom: 24,
+          }}
         >
-          <label className="flex flex-1 flex-col gap-1 text-sm">
-            <span className="font-medium">Title</span>
-            <input
-              type="text"
-              name="title"
-              required
-              placeholder="Intro to Widgets"
-              className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="flex flex-1 flex-col gap-1 text-sm">
-            <span className="font-medium">Subtitle (optional)</span>
-            <input
-              type="text"
-              name="subtitle"
-              placeholder="A short summary"
-              className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-sm"
-            />
-          </label>
-          <button type="submit" className="cf-btn-primary">
-            Create
-          </button>
-        </form>
-      </section>
+          <div className="mono-label" style={{ marginBottom: 12 }}>
+            — Create a new course
+          </div>
+          <form
+            action={createCourseAction}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr auto",
+              gap: 12,
+              alignItems: "end",
+            }}
+          >
+            <div className="field" style={{ margin: 0 }}>
+              <label>TITLE</label>
+              <input
+                type="text"
+                name="title"
+                required
+                placeholder="Intro to Widgets"
+              />
+            </div>
+            <div className="field" style={{ margin: 0 }}>
+              <label>SUBTITLE</label>
+              <input
+                type="text"
+                name="subtitle"
+                placeholder="A short summary"
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">
+              + Create course
+            </button>
+          </form>
+        </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">All courses</h2>
         {courses.length === 0 ? (
-          <div className="rounded-[var(--cf-radius)] border border-dashed border-[var(--cf-border)] p-8 text-center text-sm text-[var(--cf-muted-fg)]">
-            No courses yet. Create one above.
+          <div
+            className="card"
+            style={{
+              background: "var(--paper-2)",
+              border: "1px dashed var(--hair-2)",
+              borderRadius: "var(--radius-lg)",
+              padding: 48,
+              textAlign: "center",
+              color: "var(--ink-3)",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "var(--serif)",
+                fontSize: 22,
+                color: "var(--ink-2)",
+                marginBottom: 6,
+              }}
+            >
+              No courses yet.
+            </div>
+            <div className="mono-label">
+              Create your first course above to get started.
+            </div>
           </div>
         ) : (
-          <ul className="flex flex-col gap-2">
-            {courses.map((c) => (
-              <li
+          <div className="admin-table">
+            <div className="admin-table-head">
+              <div></div>
+              <div>Course</div>
+              <div>Status</div>
+              <div>Structure</div>
+              <div>Price</div>
+              <div></div>
+            </div>
+            {courses.map((c, i) => (
+              <Link
                 key={c.id}
-                className="flex items-center justify-between gap-4 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-4"
+                href={`/admin/courses/${c.id}` as `/admin/courses/${string}`}
+                className="admin-row"
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/admin/courses/${c.id}` as `/admin/courses/${string}`}
-                      className="text-sm font-semibold hover:underline"
-                    >
-                      {c.title}
-                    </Link>
-                    <span
-                      className={`rounded px-2 py-0.5 text-xs ${
-                        c.published
-                          ? "bg-[var(--cf-accent)] text-[var(--cf-accent-fg)]"
-                          : "border border-[var(--cf-border)] text-[var(--cf-muted-fg)]"
-                      }`}
-                    >
-                      {c.published ? "Published" : "Draft"}
-                    </span>
-                  </div>
-                  <div className="mt-1 text-xs text-[var(--cf-muted-fg)]">
-                    /{c.slug} · {c.moduleCount} modules · {c.lessonCount} lessons
-                    · {formatPrice(c.priceCents, c.currency, c.isFree)}
+                <div
+                  className={`admin-row-thumb ${THUMB_GRADS[i % THUMB_GRADS.length]}`}
+                >
+                  {c.coverImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={c.coverImageUrl} alt="" />
+                  ) : (
+                    c.title.charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div>
+                  <div className="admin-row-title">{c.title}</div>
+                  <div className="admin-row-sub">
+                    /{c.slug}
+                    {c.subtitle ? ` · ${c.subtitle}` : ""}
                   </div>
                 </div>
-                <form action={deleteCourseAction}>
-                  <input type="hidden" name="id" value={c.id} />
-                  <button
-                    type="submit"
-                    className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] px-3 py-1.5 text-xs text-[var(--cf-muted-fg)] hover:text-[var(--cf-fg)]"
+                <div>
+                  <span
+                    className={`status ${c.published ? "status-published" : "status-draft"}`}
                   >
-                    Delete
-                  </button>
-                </form>
-              </li>
+                    {c.published ? "Published" : "Draft"}
+                  </span>
+                </div>
+                <div>
+                  <span className="admin-row-num">{c.lessonCount}</span>
+                  <span
+                    className="mono-label"
+                    style={{ marginLeft: 6, fontSize: 10 }}
+                  >
+                    {c.lessonCount === 1 ? "LESSON" : "LESSONS"} ·{" "}
+                    {c.moduleCount}{" "}
+                    {c.moduleCount === 1 ? "MODULE" : "MODULES"}
+                  </span>
+                </div>
+                <div className="admin-row-mono">
+                  {formatPrice(c.priceCents, c.currency, c.isFree)}
+                </div>
+                <div style={{ display: "flex", gap: 4, justifyContent: "end" }}>
+                  <DeleteCourseButton id={c.id} title={c.title} />
+                </div>
+              </Link>
             ))}
-          </ul>
+          </div>
         )}
-      </section>
-    </div>
+      </div>
+    </>
   );
 }

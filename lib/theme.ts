@@ -34,22 +34,22 @@ export interface ResolvedTheme {
 
 const DEFAULT_THEME: ResolvedTheme = {
   colors: {
-    bg: "#ffffff",
-    fg: "#0a0a0a",
-    surface: "#ffffff",
-    mutedFg: "#57606a",
-    border: "#e5e7eb",
-    primary: "#111827",
-    primaryFg: "#ffffff",
-    accent: "#2563eb",
-    accentFg: "#ffffff",
+    bg: "oklch(0.16 0.025 300)",
+    fg: "oklch(0.98 0.005 300)",
+    surface: "oklch(0.20 0.03 300)",
+    mutedFg: "oklch(0.60 0.02 300)",
+    border: "oklch(0.28 0.03 300)",
+    primary: "oklch(0.72 0.28 355)",
+    primaryFg: "oklch(1 0 0)",
+    accent: "oklch(0.58 0.3 340)",
+    accentFg: "oklch(1 0 0)",
   },
   fonts: {
-    sans: "Inter, ui-sans-serif, system-ui, sans-serif",
-    heading: "Inter, ui-sans-serif, system-ui, sans-serif",
-    mono: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    sans: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
+    heading: "'Poppins', 'Plus Jakarta Sans', system-ui, sans-serif",
+    mono: "'JetBrains Mono', 'SF Mono', Menlo, monospace",
   },
-  borderRadius: "0.5rem",
+  borderRadius: "10px",
   customCss: null,
 };
 
@@ -90,7 +90,6 @@ export async function loadSiteSettings() {
       tagline: null,
       logoUrl: null,
       faviconUrl: null,
-      rawHtmlBlockEnabled: false,
       googleOauthEnabled: false,
       updatedAt: new Date(),
     }
@@ -102,7 +101,6 @@ type SiteSettingsPatch = {
   tagline?: string | null;
   logoUrl?: string | null;
   faviconUrl?: string | null;
-  rawHtmlBlockEnabled?: boolean;
   googleOauthEnabled?: boolean;
 };
 
@@ -124,7 +122,6 @@ export async function upsertSiteSettings(patch: SiteSettingsPatch) {
       tagline: patch.tagline ?? null,
       logoUrl: patch.logoUrl ?? null,
       faviconUrl: patch.faviconUrl ?? null,
-      rawHtmlBlockEnabled: patch.rawHtmlBlockEnabled ?? false,
       googleOauthEnabled: patch.googleOauthEnabled ?? false,
     });
   }

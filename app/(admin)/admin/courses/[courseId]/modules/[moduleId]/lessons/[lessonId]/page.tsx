@@ -20,44 +20,55 @@ export default async function LessonEditPage({
   if (!lesson) notFound();
 
   return (
-    <div className="flex flex-col gap-8 max-w-4xl">
-      <header className="flex items-start justify-between gap-4">
+    <>
+      <div className="admin-header">
         <div>
           <Link
             href={
               `/admin/courses/${courseId}/modules/${moduleId}` as `/admin/courses/${string}/modules/${string}`
             }
-            className="text-xs text-[var(--cf-muted-fg)] hover:underline"
+            className="mono-label"
+            style={{ textDecoration: "none" }}
           >
             ← {mod.title}
           </Link>
-          <h1 className="mt-1 text-2xl font-semibold">{lesson.title}</h1>
+          <h1 style={{ marginTop: 4 }}>{lesson.title}</h1>
+          <div className="admin-header-sub">
+            — /{lesson.slug} ·{" "}
+            {lesson.bunnyVideoId ? "VIDEO READY" : "NO VIDEO"}
+            {lesson.isFreePreview ? " · FREE PREVIEW" : ""}
+          </div>
         </div>
-        <form action={deleteLessonAction}>
-          <input type="hidden" name="courseId" value={courseId} />
-          <input type="hidden" name="id" value={lesson.id} />
-          <button
-            type="submit"
-            className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] px-3 py-1.5 text-xs text-[var(--cf-muted-fg)] hover:text-[var(--cf-fg)]"
-          >
-            Delete lesson
-          </button>
-        </form>
-      </header>
+        <div className="admin-header-actions">
+          <form action={deleteLessonAction}>
+            <input type="hidden" name="courseId" value={courseId} />
+            <input type="hidden" name="id" value={lesson.id} />
+            <button
+              type="submit"
+              className="btn btn-ghost"
+              style={{ fontSize: 12, color: "var(--ink-3)" }}
+            >
+              Delete lesson
+            </button>
+          </form>
+        </div>
+      </div>
 
-      <LessonEditor
-        courseId={courseId}
-        moduleId={moduleId}
-        lesson={{
-          id: lesson.id,
-          title: lesson.title,
-          slug: lesson.slug,
-          isFreePreview: lesson.isFreePreview,
-          bunnyVideoId: lesson.bunnyVideoId,
-          durationSec: lesson.durationSec,
-          descriptionTiptap: lesson.descriptionTiptap,
-        }}
-      />
-    </div>
+      <div className="admin-section">
+        <LessonEditor
+          courseId={courseId}
+          moduleId={moduleId}
+          lesson={{
+            id: lesson.id,
+            title: lesson.title,
+            slug: lesson.slug,
+            isFreePreview: lesson.isFreePreview,
+            bunnyVideoId: lesson.bunnyVideoId,
+            durationSec: lesson.durationSec,
+            descriptionTiptap: lesson.descriptionTiptap,
+          }}
+        />
+      </div>
+    </>
   );
 }

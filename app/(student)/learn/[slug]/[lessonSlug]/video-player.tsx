@@ -124,30 +124,45 @@ export function VideoPlayer({
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="aspect-video w-full overflow-hidden rounded-[var(--cf-radius)] bg-black">
-        <iframe
-          ref={iframeRef}
-          src={embedUrl}
-          allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-          allowFullScreen
-          className="h-full w-full"
-        />
-      </div>
-      <div className="flex items-center justify-end gap-3">
+    <>
+      <iframe
+        ref={iframeRef}
+        src={embedUrl}
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+        allowFullScreen
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: 16,
+          right: 16,
+          zIndex: 2,
+        }}
+      >
         {isCompleted ? (
-          <span className="text-sm text-[var(--cf-accent)]">✓ Completed</span>
+          <span
+            className="chip chip-olive"
+            style={{ background: "oklch(0.3 0.1 160 / 0.7)" }}
+          >
+            ✓ Completed
+          </span>
         ) : (
           <button
             type="button"
             onClick={markComplete}
             disabled={saving}
-            className="cf-btn-secondary"
+            className="btn btn-ghost"
+            style={{
+              background: "oklch(0.08 0.02 300 / 0.6)",
+              backdropFilter: "blur(8px)",
+              fontSize: 12,
+              padding: "6px 12px",
+            }}
           >
             {saving ? "Saving…" : "Mark as complete"}
           </button>
         )}
       </div>
-    </div>
+    </>
   );
 }

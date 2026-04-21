@@ -115,7 +115,6 @@ export const courses = pgTable(
     currency: text("currency").notNull().default("USD"),
     isFree: boolean("is_free").notNull().default(false),
     published: boolean("published").notNull().default(false),
-    salesPagePuck: jsonb("sales_page_puck"),
     instructorUserId: text("instructor_user_id").references(() => users.id, {
       onDelete: "set null",
     }),
@@ -210,20 +209,6 @@ export const lessonProgress = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.lessonId] })],
 );
 
-export const pages = pgTable("pages", {
-  id: text("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
-  title: text("title"),
-  puckData: jsonb("puck_data"),
-  published: boolean("published").notNull().default(false),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
-
 export const themeSettings = pgTable("theme_settings", {
   id: text("id").primaryKey().default("singleton"),
   colors: jsonb("colors").notNull(),
@@ -241,9 +226,6 @@ export const siteSettings = pgTable("site_settings", {
   tagline: text("tagline"),
   logoUrl: text("logo_url"),
   faviconUrl: text("favicon_url"),
-  rawHtmlBlockEnabled: boolean("raw_html_block_enabled")
-    .notNull()
-    .default(false),
   googleOauthEnabled: boolean("google_oauth_enabled").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
@@ -349,6 +331,5 @@ export type Module = typeof modules.$inferSelect;
 export type Lesson = typeof lessons.$inferSelect;
 export type Enrollment = typeof enrollments.$inferSelect;
 export type LessonProgress = typeof lessonProgress.$inferSelect;
-export type Page = typeof pages.$inferSelect;
 export type ThemeSettings = typeof themeSettings.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;

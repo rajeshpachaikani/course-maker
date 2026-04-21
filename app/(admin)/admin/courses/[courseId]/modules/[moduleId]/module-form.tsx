@@ -30,27 +30,31 @@ export function ModuleForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="flex flex-col gap-4 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6"
+      className="card"
+      style={{
+        background: "var(--paper-2)",
+        border: "1px solid var(--hair)",
+        borderRadius: "var(--radius-lg)",
+        padding: 22,
+      }}
     >
-      <h2 className="text-lg font-semibold">Module details</h2>
+      <div className="mono-label" style={{ marginBottom: 12 }}>
+        — Module details
+      </div>
       <input type="hidden" name="courseId" value={courseId} />
       <input type="hidden" name="id" value={mod.id} />
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Title</span>
-        <input
-          type="text"
-          name="title"
-          defaultValue={mod.title}
-          required
-          className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-sm"
-        />
-      </label>
-      <div className="flex items-center gap-3">
-        <button type="submit" disabled={pending} className="cf-btn-primary">
+      <div className="field">
+        <label>TITLE</label>
+        <input type="text" name="title" defaultValue={mod.title} required />
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <button type="submit" disabled={pending} className="btn btn-primary">
           {pending ? "Saving…" : "Save module"}
         </button>
         {message ? (
-          <span className="text-sm text-[var(--cf-muted-fg)]">{message}</span>
+          <span className="mono-label" style={{ fontSize: 11 }}>
+            {message}
+          </span>
         ) : null}
       </div>
     </form>

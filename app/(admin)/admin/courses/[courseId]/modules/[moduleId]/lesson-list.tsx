@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
 import Link from "next/link";
 import { reorderLessonsAction } from "../../../actions";
 
@@ -15,13 +15,16 @@ interface LessonItem {
 export function LessonList({
   courseId,
   moduleId,
-  lessons: initial,
+  lessons,
 }: {
   courseId: string;
   moduleId: string;
   lessons: LessonItem[];
 }) {
-  const [items, setItems] = useState(initial);
+  const [items, setItems] = useOptimistic<LessonItem[], LessonItem[]>(
+    lessons,
+    (_, next) => next,
+  );
   const [pending, start] = useTransition();
 
   function move(index: number, delta: number) {
@@ -31,8 +34,8 @@ export function LessonList({
     const tmp = next[index];
     next[index] = next[target];
     next[target] = tmp;
-    setItems(next);
     start(async () => {
+      setItems(next);
       await reorderLessonsAction(
         courseId,
         moduleId,
@@ -43,26 +46,80 @@ export function LessonList({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-[var(--cf-radius)] border border-dashed border-[var(--cf-border)] p-6 text-center text-sm text-[var(--cf-muted-fg)]">
-        No lessons yet. Add one above.
+      <div
+        style={{
+          background: "var(--paper-2)",
+          border: "1px dashed var(--hair-2)",
+          borderRadius: "var(--radius-lg)",
+          padding: 36,
+          textAlign: "center",
+          color: "var(--ink-3)",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: 18,
+            color: "var(--ink-2)",
+            marginBottom: 4,
+          }}
+        >
+          No lessons yet.
+        </div>
+        <div className="mono-label" style={{ fontSize: 10 }}>
+          Add one above to start filling this module.
+        </div>
       </div>
     );
   }
 
   return (
-    <ul className="flex flex-col gap-2" aria-busy={pending}>
+    <ul
+      aria-busy={pending}
+      style={{
+        listStyle: "none",
+        padding: 0,
+        margin: 0,
+      }}
+    >
       {items.map((l, i) => (
-        <li
-          key={l.id}
-          className="flex items-center gap-3 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] p-3"
-        >
-          <div className="flex flex-col gap-1">
+        <li key={l.id} className="lesson-row">
+          <div className="lesson-thumb-sm bg-plum">
+            {String(i + 1).padStart(2, "0")}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div className="lesson-row-title">
+              <Link
+                href={
+                  `/admin/courses/${courseId}/modules/${moduleId}/lessons/${l.id}` as `/admin/courses/${string}/modules/${string}/lessons/${string}`
+                }
+                style={{ color: "inherit", textDecoration: "none" }}
+              >
+                {l.title}
+              </Link>
+            </div>
+            <div className="lesson-row-meta">
+              /{l.slug} · {l.bunnyVideoId ? "VIDEO READY" : "NO VIDEO"}
+              {l.isFreePreview ? " · FREE PREVIEW" : ""}
+            </div>
+          </div>
+          <span
+            className={`status ${l.isFreePreview ? "status-published" : "status-draft"}`}
+          >
+            {l.isFreePreview ? "Preview" : "Paid"}
+          </span>
+          <div style={{ display: "flex", gap: 4 }}>
             <button
               type="button"
               onClick={() => move(i, -1)}
               disabled={i === 0 || pending}
               aria-label="Move up"
-              className="rounded border border-[var(--cf-border)] px-2 py-0.5 text-xs disabled:opacity-30"
+              className="btn btn-ghost"
+              style={{
+                padding: "4px 8px",
+                fontSize: 11,
+                opacity: i === 0 ? 0.3 : 1,
+              }}
             >
               ↑
             </button>
@@ -71,34 +128,25 @@ export function LessonList({
               onClick={() => move(i, 1)}
               disabled={i === items.length - 1 || pending}
               aria-label="Move down"
-              className="rounded border border-[var(--cf-border)] px-2 py-0.5 text-xs disabled:opacity-30"
+              className="btn btn-ghost"
+              style={{
+                padding: "4px 8px",
+                fontSize: 11,
+                opacity: i === items.length - 1 ? 0.3 : 1,
+              }}
             >
               ↓
             </button>
-          </div>
-          <div className="flex-1">
             <Link
               href={
                 `/admin/courses/${courseId}/modules/${moduleId}/lessons/${l.id}` as `/admin/courses/${string}/modules/${string}/lessons/${string}`
               }
-              className="text-sm font-medium hover:underline"
+              className="btn btn-ghost"
+              style={{ padding: "4px 10px", fontSize: 11 }}
             >
-              {l.title}
+              Edit →
             </Link>
-            <div className="mt-0.5 text-xs text-[var(--cf-muted-fg)]">
-              /{l.slug}
-              {l.bunnyVideoId ? " · video" : " · no video"}
-              {l.isFreePreview ? " · preview" : ""}
-            </div>
           </div>
-          <Link
-            href={
-              `/admin/courses/${courseId}/modules/${moduleId}/lessons/${l.id}` as `/admin/courses/${string}/modules/${string}/lessons/${string}`
-            }
-            className="text-xs text-[var(--cf-muted-fg)] hover:text-[var(--cf-fg)]"
-          >
-            Edit →
-          </Link>
         </li>
       ))}
     </ul>

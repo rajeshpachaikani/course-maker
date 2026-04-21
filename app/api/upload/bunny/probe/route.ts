@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/dal";
+import { currentUserIsAdmin } from "@/lib/dal";
 import { getBunnyStreamConfig, getBunnyVideoMeta } from "@/lib/bunny";
 
 export async function GET(request: Request) {
-  const user = await getCurrentUser();
-  if (!user || user.role !== "admin") {
+  if (!(await currentUserIsAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { searchParams } = new URL(request.url);

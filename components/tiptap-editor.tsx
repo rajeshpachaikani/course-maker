@@ -2,7 +2,6 @@
 
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
 import type { JSONContent } from "@tiptap/core";
 import { useEffect } from "react";
 
@@ -22,8 +21,8 @@ export function TiptapEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        link: { openOnClick: false, autolink: true },
       }),
-      Link.configure({ openOnClick: false, autolink: true }),
     ],
     content: value ?? undefined,
     editorProps: {

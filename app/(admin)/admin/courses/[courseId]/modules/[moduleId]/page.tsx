@@ -22,62 +22,111 @@ export default async function ModuleEditPage({
   if (!mod) notFound();
 
   return (
-    <div className="flex flex-col gap-8 max-w-4xl">
-      <header className="flex items-start justify-between gap-4">
+    <>
+      <div className="admin-header">
         <div>
           <Link
-            href={
-              `/admin/courses/${courseId}` as `/admin/courses/${string}`
-            }
-            className="text-xs text-[var(--cf-muted-fg)] hover:underline"
+            href={`/admin/courses/${courseId}` as `/admin/courses/${string}`}
+            className="mono-label"
+            style={{ textDecoration: "none" }}
           >
             ← {tree.course.title}
           </Link>
-          <h1 className="mt-1 text-2xl font-semibold">{mod.title}</h1>
+          <h1 style={{ marginTop: 4 }}>{mod.title}</h1>
+          <div className="admin-header-sub">
+            — {mod.lessons.length}{" "}
+            {mod.lessons.length === 1 ? "lesson" : "lessons"} in this module
+          </div>
         </div>
-        <form action={deleteModuleAction}>
-          <input type="hidden" name="courseId" value={courseId} />
-          <input type="hidden" name="id" value={mod.id} />
-          <button
-            type="submit"
-            className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] px-3 py-1.5 text-xs text-[var(--cf-muted-fg)] hover:text-[var(--cf-fg)]"
-          >
-            Delete module
-          </button>
-        </form>
-      </header>
-
-      <ModuleForm courseId={courseId} module={mod} />
-
-      <section className="flex flex-col gap-4 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6">
-        <div>
-          <h2 className="text-lg font-semibold">Lessons</h2>
-          <p className="text-sm text-[var(--cf-muted-fg)]">
-            Drag to reorder. Click a lesson to edit content.
-          </p>
+        <div className="admin-header-actions">
+          <form action={deleteModuleAction}>
+            <input type="hidden" name="courseId" value={courseId} />
+            <input type="hidden" name="id" value={mod.id} />
+            <button
+              type="submit"
+              className="btn btn-ghost"
+              style={{ fontSize: 12, color: "var(--ink-3)" }}
+            >
+              Delete module
+            </button>
+          </form>
         </div>
-        <form
-          action={createLessonAction}
-          className="flex flex-col gap-2 sm:flex-row sm:items-end"
-        >
-          <input type="hidden" name="courseId" value={courseId} />
-          <input type="hidden" name="moduleId" value={mod.id} />
-          <label className="flex flex-1 flex-col gap-1 text-sm">
-            <span className="font-medium">New lesson title</span>
-            <input
-              type="text"
-              name="title"
-              required
-              placeholder="Lesson name"
-              className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-sm"
+      </div>
+
+      <div className="admin-section">
+        <div className="editor-grid">
+          <div>
+            <ModuleForm courseId={courseId} module={mod} />
+          </div>
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "end",
+                justifyContent: "space-between",
+                marginBottom: 14,
+              }}
+            >
+              <div>
+                <div className="mono-label">— Lessons</div>
+                <h2
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontSize: 26,
+                    margin: "6px 0 0",
+                    fontWeight: 600,
+                    letterSpacing: "-0.015em",
+                    color: "var(--ink)",
+                  }}
+                >
+                  Lessons{" "}
+                  <span
+                    style={{
+                      fontStyle: "italic",
+                      color: "var(--ink-3)",
+                      fontSize: 20,
+                      fontWeight: 500,
+                    }}
+                  >
+                    — reorder with arrows
+                  </span>
+                </h2>
+              </div>
+            </div>
+
+            <form
+              action={createLessonAction}
+              style={{
+                display: "flex",
+                gap: 8,
+                marginBottom: 16,
+                alignItems: "end",
+              }}
+            >
+              <input type="hidden" name="courseId" value={courseId} />
+              <input type="hidden" name="moduleId" value={mod.id} />
+              <div className="field" style={{ flex: 1, margin: 0 }}>
+                <label>NEW LESSON TITLE</label>
+                <input
+                  type="text"
+                  name="title"
+                  required
+                  placeholder="Lesson name"
+                />
+              </div>
+              <button type="submit" className="btn btn-ink">
+                + Add lesson
+              </button>
+            </form>
+
+            <LessonList
+              courseId={courseId}
+              moduleId={mod.id}
+              lessons={mod.lessons}
             />
-          </label>
-          <button type="submit" className="cf-btn-primary">
-            Add lesson
-          </button>
-        </form>
-        <LessonList courseId={courseId} moduleId={mod.id} lessons={mod.lessons} />
-      </section>
-    </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

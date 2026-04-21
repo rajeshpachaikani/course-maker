@@ -24,7 +24,18 @@ interface ResolvedTheme {
   customCss: string | null;
 }
 
-const COLOR_FIELDS: Array<{ key: keyof ThemeColors; label: string; hint?: string }> = [
+const CARD_STYLE: React.CSSProperties = {
+  background: "var(--paper-2)",
+  border: "1px solid var(--hair)",
+  borderRadius: "var(--radius-lg)",
+  padding: 24,
+};
+
+const COLOR_FIELDS: Array<{
+  key: keyof ThemeColors;
+  label: string;
+  hint?: string;
+}> = [
   { key: "bg", label: "Background", hint: "Page background" },
   { key: "fg", label: "Foreground", hint: "Body text" },
   { key: "surface", label: "Surface", hint: "Cards & panels" },
@@ -36,10 +47,43 @@ const COLOR_FIELDS: Array<{ key: keyof ThemeColors; label: string; hint?: string
   { key: "accentFg", label: "Accent text", hint: "Text on accent" },
 ];
 
+const ACCENT_PRESETS: Array<{ id: string; primary: string; accent: string }> = [
+  {
+    id: "pink",
+    primary: "oklch(0.72 0.28 355)",
+    accent: "oklch(0.58 0.3 340)",
+  },
+  {
+    id: "terracotta",
+    primary: "oklch(0.68 0.16 35)",
+    accent: "oklch(0.56 0.14 30)",
+  },
+  {
+    id: "olive",
+    primary: "oklch(0.6 0.12 120)",
+    accent: "oklch(0.48 0.1 120)",
+  },
+  {
+    id: "ochre",
+    primary: "oklch(0.75 0.14 75)",
+    accent: "oklch(0.6 0.13 70)",
+  },
+  {
+    id: "plum",
+    primary: "oklch(0.6 0.18 330)",
+    accent: "oklch(0.45 0.15 330)",
+  },
+  {
+    id: "teal",
+    primary: "oklch(0.65 0.13 195)",
+    accent: "oklch(0.5 0.11 200)",
+  },
+];
+
 const GOOGLE_FONTS = [
+  "'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif",
   "Inter, ui-sans-serif, system-ui, sans-serif",
   "Manrope, ui-sans-serif, system-ui, sans-serif",
-  "Plus Jakarta Sans, ui-sans-serif, system-ui, sans-serif",
   "DM Sans, ui-sans-serif, system-ui, sans-serif",
   "Poppins, ui-sans-serif, system-ui, sans-serif",
   "Work Sans, ui-sans-serif, system-ui, sans-serif",
@@ -50,9 +94,10 @@ const GOOGLE_FONTS = [
 ];
 
 const HEADING_FONTS = [
+  "'Poppins', ui-sans-serif, system-ui, sans-serif",
+  "'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif",
   "Inter, ui-sans-serif, system-ui, sans-serif",
   "Manrope, ui-sans-serif, system-ui, sans-serif",
-  "Poppins, ui-sans-serif, system-ui, sans-serif",
   "Fraunces, ui-serif, Georgia, serif",
   "Playfair Display, ui-serif, Georgia, serif",
   "Space Grotesk, ui-sans-serif, system-ui, sans-serif",
@@ -61,16 +106,20 @@ const HEADING_FONTS = [
 ];
 
 const MONO_FONTS = [
+  "'JetBrains Mono', ui-monospace, SFMono-Regular, monospace",
   "ui-monospace, SFMono-Regular, Menlo, monospace",
-  "JetBrains Mono, ui-monospace, SFMono-Regular, monospace",
   "Fira Code, ui-monospace, SFMono-Regular, monospace",
   "IBM Plex Mono, ui-monospace, SFMono-Regular, monospace",
   "Source Code Pro, ui-monospace, SFMono-Regular, monospace",
 ];
 
 function parseRadiusRem(v: string): number {
+  if (v.endsWith("px")) {
+    const n = Number.parseFloat(v);
+    return Number.isFinite(n) ? n / 16 : 0.625;
+  }
   const n = Number.parseFloat(v);
-  return Number.isFinite(n) ? n : 0.5;
+  return Number.isFinite(n) ? n : 0.625;
 }
 
 export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
@@ -91,7 +140,7 @@ export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     fd.set("customCss", customCss);
-    fd.set("borderRadius", String(radius));
+    fd.set("borderRadius", `${radius}rem`);
     start(async () => {
       setMessage(null);
       try {
@@ -107,78 +156,159 @@ export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
     setColors((c) => ({ ...c, [key]: value }));
   }
 
-  const previewStyle = {
-    "--cf-bg": colors.bg,
-    "--cf-fg": colors.fg,
-    "--cf-surface": colors.surface,
-    "--cf-muted-fg": colors.mutedFg,
-    "--cf-border": colors.border,
-    "--cf-primary": colors.primary,
-    "--cf-primary-fg": colors.primaryFg,
-    "--cf-accent": colors.accent,
-    "--cf-accent-fg": colors.accentFg,
-    "--cf-radius": `${radius}rem`,
-    "--cf-font-sans": sans,
-    "--cf-font-heading": heading,
-  } as React.CSSProperties;
+  function applyAccentPreset(preset: (typeof ACCENT_PRESETS)[number]) {
+    setColors((c) => ({ ...c, primary: preset.primary, accent: preset.accent }));
+  }
+
+  const activePreset = ACCENT_PRESETS.find(
+    (p) => p.primary === colors.primary,
+  );
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-      <section className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6">
-        <h2 className="text-lg font-semibold">Colors</h2>
-        <p className="mt-1 text-sm text-[var(--cf-muted-fg)]">
-          Hex values. Applied as CSS custom properties.
-        </p>
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <form
+      onSubmit={handleSubmit}
+      style={{ display: "flex", flexDirection: "column", gap: 20 }}
+    >
+      <section style={CARD_STYLE}>
+        <div className="mono-label" style={{ marginBottom: 4 }}>
+          — Accent palette
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: 22,
+            margin: "2px 0 14px",
+            fontWeight: 600,
+            color: "var(--ink)",
+          }}
+        >
+          Pick a preset{" "}
+          <span
+            style={{
+              fontStyle: "italic",
+              color: "var(--ink-3)",
+              fontSize: 17,
+              fontWeight: 500,
+            }}
+          >
+            — or edit values below
+          </span>
+        </h2>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 12,
+            alignItems: "center",
+          }}
+        >
+          {ACCENT_PRESETS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className={`swatch ${activePreset?.id === p.id ? "active" : ""}`}
+              style={{
+                background: `linear-gradient(135deg, ${p.primary} 0%, ${p.accent} 100%)`,
+              }}
+              onClick={() => applyAccentPreset(p)}
+              aria-label={p.id}
+              title={p.id}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section style={CARD_STYLE}>
+        <div className="mono-label" style={{ marginBottom: 4 }}>
+          — Colors
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: 22,
+            margin: "2px 0 14px",
+            fontWeight: 600,
+            color: "var(--ink)",
+          }}
+        >
+          Full palette
+        </h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+            gap: 16,
+          }}
+        >
           {COLOR_FIELDS.map((f) => (
-            <label key={f.key} className="flex flex-col gap-1 text-sm">
-              <span className="font-medium">{f.label}</span>
-              {f.hint ? (
-                <span className="text-xs text-[var(--cf-muted-fg)]">
-                  {f.hint}
-                </span>
-              ) : null}
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={colors[f.key]}
-                  onChange={(e) => setColor(f.key, e.target.value)}
-                  className="h-9 w-12 cursor-pointer rounded-[var(--cf-radius)] border border-[var(--cf-border)]"
-                  aria-label={`${f.label} color`}
+            <div key={f.key} className="field" style={{ margin: 0 }}>
+              <label>{f.label.toUpperCase()}</label>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 8,
+                    background: colors[f.key],
+                    border: "1px solid var(--hair)",
+                    flexShrink: 0,
+                  }}
                 />
                 <input
                   type="text"
                   name={`colors.${f.key}`}
                   value={colors[f.key]}
                   onChange={(e) => setColor(f.key, e.target.value)}
-                  pattern="^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
-                  className="flex-1 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 font-mono text-xs"
+                  style={{ flex: 1, fontFamily: "var(--mono)", fontSize: 12 }}
                 />
               </div>
-            </label>
+              {f.hint ? (
+                <div
+                  className="mono-label"
+                  style={{ fontSize: 9.5, marginTop: 4 }}
+                >
+                  — {f.hint.toUpperCase()}
+                </div>
+              ) : null}
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6">
-        <h2 className="text-lg font-semibold">Typography</h2>
-        <div className="mt-4 flex flex-col gap-4">
+      <section style={CARD_STYLE}>
+        <div className="mono-label" style={{ marginBottom: 4 }}>
+          — Typography
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: 22,
+            margin: "2px 0 14px",
+            fontWeight: 600,
+            color: "var(--ink)",
+          }}
+        >
+          Fonts
+        </h2>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: 14 }}
+        >
           <FontSelect
-            label="Body font (sans)"
+            label="BODY FONT (SANS)"
             name="fonts.sans"
             value={sans}
             onChange={setSans}
             options={GOOGLE_FONTS}
           />
           <FontSelect
-            label="Heading font"
+            label="HEADING FONT"
             name="fonts.heading"
             value={heading}
             onChange={setHeading}
             options={HEADING_FONTS}
           />
           <FontSelect
-            label="Mono font"
+            label="MONO FONT"
             name="fonts.mono"
             value={mono}
             onChange={setMono}
@@ -187,12 +317,22 @@ export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
         </div>
       </section>
 
-      <section className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6">
-        <h2 className="text-lg font-semibold">Border radius</h2>
-        <p className="mt-1 text-sm text-[var(--cf-muted-fg)]">
-          Global corner rounding. Applied to buttons, cards, and inputs.
-        </p>
-        <div className="mt-4 flex items-center gap-4">
+      <section style={CARD_STYLE}>
+        <div className="mono-label" style={{ marginBottom: 4 }}>
+          — Border radius
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: 22,
+            margin: "2px 0 14px",
+            fontWeight: 600,
+            color: "var(--ink)",
+          }}
+        >
+          Corner rounding
+        </h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <input
             type="range"
             min="0"
@@ -200,22 +340,58 @@ export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
             step="0.05"
             value={radius}
             onChange={(e) => setRadius(Number(e.target.value))}
-            className="flex-1"
+            style={{ flex: 1, accentColor: "var(--pink)" }}
           />
-          <span className="w-16 font-mono text-sm">{radius.toFixed(2)}rem</span>
+          <span
+            style={{
+              width: 80,
+              fontFamily: "var(--mono)",
+              fontSize: 13,
+              color: "var(--ink)",
+              textAlign: "right",
+            }}
+          >
+            {radius.toFixed(2)}rem
+          </span>
         </div>
       </section>
 
-      <section className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6">
-        <h2 className="text-lg font-semibold">Custom CSS</h2>
-        <p className="mt-1 text-sm text-[var(--cf-muted-fg)]">
-          Injected globally. Use for brand-specific tweaks. Leave empty to clear.
+      <section style={CARD_STYLE}>
+        <div className="mono-label" style={{ marginBottom: 4 }}>
+          — Custom CSS
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: 22,
+            margin: "2px 0 6px",
+            fontWeight: 600,
+            color: "var(--ink)",
+          }}
+        >
+          Advanced overrides
+        </h2>
+        <p
+          style={{
+            fontSize: 13,
+            color: "var(--ink-3)",
+            margin: "0 0 14px",
+          }}
+        >
+          Injected globally. Leave empty to clear.
         </p>
-        <div className="mt-4 overflow-hidden rounded-[var(--cf-radius)] border border-[var(--cf-border)]">
+        <div
+          style={{
+            overflow: "hidden",
+            borderRadius: "var(--radius)",
+            border: "1px solid var(--hair)",
+          }}
+        >
           <CodeMirror
             value={customCss}
             onChange={setCustomCss}
             extensions={[cssLang()]}
+            theme="dark"
             height="240px"
             basicSetup={{
               lineNumbers: true,
@@ -226,74 +402,129 @@ export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
         </div>
       </section>
 
-      <section
-        className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] p-6"
-        style={previewStyle}
-      >
-        <h2 className="text-lg font-semibold" style={{ color: colors.fg }}>
-          Preview
+      <section style={CARD_STYLE}>
+        <div className="mono-label" style={{ marginBottom: 4 }}>
+          — Live preview
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: 22,
+            margin: "2px 0 14px",
+            fontWeight: 600,
+            color: "var(--ink)",
+          }}
+        >
+          How it looks
         </h2>
         <div
-          className="mt-4 flex flex-col gap-3 rounded-[var(--cf-radius)] p-4"
-          style={{ background: colors.bg, color: colors.fg }}
+          style={{
+            background: colors.bg,
+            color: colors.fg,
+            borderRadius: `${radius}rem`,
+            padding: 24,
+            border: `1px solid ${colors.border}`,
+          }}
         >
-          <div style={{ fontFamily: heading, fontSize: "1.25rem", fontWeight: 600 }}>
+          <div
+            style={{
+              fontFamily: heading,
+              fontSize: 28,
+              fontWeight: 600,
+              letterSpacing: "-0.015em",
+              marginBottom: 8,
+            }}
+          >
             Heading example
           </div>
-          <div style={{ fontFamily: sans, color: colors.mutedFg }}>
+          <div
+            style={{
+              fontFamily: sans,
+              color: colors.mutedFg,
+              fontSize: 14,
+              marginBottom: 16,
+            }}
+          >
             Body text renders in the sans font. Muted tone used for secondary
             copy.
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div
+            style={{ display: "flex", flexWrap: "wrap", gap: 8, fontFamily: sans }}
+          >
             <button
               type="button"
               style={{
-                background: colors.primary,
+                background: `linear-gradient(90deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
                 color: colors.primaryFg,
                 borderRadius: `${radius}rem`,
-                padding: "0.5rem 1rem",
+                padding: "10px 18px",
                 border: "none",
+                fontSize: 14,
+                fontWeight: 600,
                 cursor: "default",
               }}
             >
-              Primary
+              Primary CTA
             </button>
             <button
               type="button"
               style={{
-                background: colors.accent,
-                color: colors.accentFg,
-                borderRadius: `${radius}rem`,
-                padding: "0.5rem 1rem",
-                border: "none",
-                cursor: "default",
-              }}
-            >
-              Accent
-            </button>
-            <button
-              type="button"
-              style={{
-                background: colors.surface,
+                background: "transparent",
                 color: colors.fg,
                 borderRadius: `${radius}rem`,
-                padding: "0.5rem 1rem",
+                padding: "10px 18px",
                 border: `1px solid ${colors.border}`,
+                fontSize: 14,
                 cursor: "default",
               }}
             >
               Secondary
             </button>
+            <span
+              style={{
+                background: colors.surface,
+                color: colors.accent,
+                borderRadius: 999,
+                padding: "6px 12px",
+                fontSize: 11,
+                fontFamily: mono,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                alignSelf: "center",
+              }}
+            >
+              — CHIP / TAG
+            </span>
           </div>
         </div>
       </section>
 
-      <div className="flex items-center gap-3">
-        <button type="submit" disabled={pending} className="cf-btn-primary">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          position: "sticky",
+          bottom: 16,
+          background: "var(--paper)",
+          padding: 12,
+          border: "1px solid var(--hair)",
+          borderRadius: "var(--radius-lg)",
+          boxShadow: "var(--shadow-sm)",
+        }}
+      >
+        <button
+          type="submit"
+          disabled={pending}
+          className="btn btn-primary"
+          style={{ padding: "12px 22px" }}
+        >
           {pending ? "Saving…" : "Save theme"}
         </button>
         {message ? (
-          <span className="text-sm text-[var(--cf-muted-fg)]">{message}</span>
+          <span className="mono-label" style={{ fontSize: 11 }}>
+            {message}
+          </span>
         ) : null}
       </div>
     </form>
@@ -315,8 +546,8 @@ function FontSelect({
 }) {
   const inList = options.includes(value);
   return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
+    <div className="field" style={{ margin: 0 }}>
+      <label>{label}</label>
       <input type="hidden" name={name} value={value} />
       <select
         value={inList ? value : "__custom__"}
@@ -328,12 +559,11 @@ function FontSelect({
           }
           onChange(v);
         }}
-        className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-sm"
         style={{ fontFamily: value }}
       >
         {options.map((o) => (
           <option key={o} value={o} style={{ fontFamily: o }}>
-            {o.split(",")[0]}
+            {o.split(",")[0].replace(/['"]/g, "")}
           </option>
         ))}
         <option value="__custom__">Custom…</option>
@@ -344,9 +574,28 @@ function FontSelect({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Custom font stack (CSS font-family value)"
-          className="mt-1 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 font-mono text-xs"
+          style={{
+            marginTop: 8,
+            fontFamily: "var(--mono)",
+            fontSize: 12,
+          }}
         />
-      ) : null}
-    </label>
+      ) : (
+        <div
+          style={{
+            fontFamily: value,
+            fontSize: 18,
+            color: "var(--ink-2)",
+            marginTop: 8,
+            padding: "8px 12px",
+            background: "var(--paper-3)",
+            borderRadius: "var(--radius-sm)",
+            border: "1px solid var(--hair)",
+          }}
+        >
+          Marketing, taught well — the quick brown fox.
+        </div>
+      )}
+    </div>
   );
 }

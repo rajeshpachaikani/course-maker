@@ -12,12 +12,16 @@ import {
 
 export const metadata = { title: "Settings" };
 
+const CARD_STYLE: React.CSSProperties = {
+  background: "var(--paper-2)",
+  border: "1px solid var(--hair)",
+  borderRadius: "var(--radius-lg)",
+  padding: 24,
+};
+
 const CREDENTIAL_LABELS: Record<CredentialKey, { label: string; hint?: string }> = {
   stripe_secret: { label: "Stripe secret key", hint: "sk_live_… or sk_test_…" },
-  stripe_webhook_secret: {
-    label: "Stripe webhook secret",
-    hint: "whsec_…",
-  },
+  stripe_webhook_secret: { label: "Stripe webhook secret", hint: "whsec_…" },
   stripe_publishable: { label: "Stripe publishable key", hint: "pk_…" },
   bunny_api_key: { label: "Bunny account API key" },
   bunny_stream_library_id: { label: "Bunny Stream library ID" },
@@ -36,13 +40,19 @@ const CREDENTIAL_LABELS: Record<CredentialKey, { label: string; hint?: string }>
   google_oauth_client_secret: { label: "Google OAuth client secret" },
 };
 
-const CREDENTIAL_GROUPS: Array<{ title: string; keys: CredentialKey[] }> = [
+const CREDENTIAL_GROUPS: Array<{
+  title: string;
+  subtitle: string;
+  keys: CredentialKey[];
+}> = [
   {
     title: "Stripe",
+    subtitle: "Payments · webhooks",
     keys: ["stripe_secret", "stripe_webhook_secret", "stripe_publishable"],
   },
   {
     title: "Bunny",
+    subtitle: "Video storage + streaming",
     keys: [
       "bunny_api_key",
       "bunny_stream_library_id",
@@ -51,9 +61,14 @@ const CREDENTIAL_GROUPS: Array<{ title: string; keys: CredentialKey[] }> = [
       "bunny_storage_key",
     ],
   },
-  { title: "Resend (email)", keys: ["resend_api_key", "resend_from_email"] },
+  {
+    title: "Resend",
+    subtitle: "Transactional email",
+    keys: ["resend_api_key", "resend_from_email"],
+  },
   {
     title: "Google OAuth",
+    subtitle: "Social sign-in",
     keys: ["google_oauth_client_id", "google_oauth_client_secret"],
   },
 ];
@@ -64,155 +79,238 @@ export default async function AdminSettingsPage() {
     listCredentialsMeta(),
   ]);
   const metaMap = new Map(credMeta.map((m) => [m.key, m]));
+  const setCount = credMeta.filter((m) => m.isSet).length;
 
   return (
-    <div className="flex flex-col gap-10 max-w-3xl">
-      <header>
-        <h1 className="text-2xl font-semibold">Settings</h1>
-        <p className="text-sm text-[var(--cf-muted-fg)]">
-          Brand identity and provider credentials. Credentials are encrypted at
-          rest with AES-256-GCM.
-        </p>
-      </header>
-
-      <section className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6">
-        <h2 className="text-lg font-semibold">Site identity</h2>
-        <p className="mt-1 text-sm text-[var(--cf-muted-fg)]">
-          Shown in the browser tab, SEO metadata, and public layout.
-        </p>
-        <form action={saveSiteSettingsAction} className="mt-6 flex flex-col gap-4">
-          <Field label="Site name" name="name" defaultValue={site.name} required />
-          <Field
-            label="Tagline"
-            name="tagline"
-            defaultValue={site.tagline ?? ""}
-          />
-          <Field
-            label="Logo URL"
-            name="logoUrl"
-            defaultValue={site.logoUrl ?? ""}
-            placeholder="https://…/logo.svg"
-          />
-          <Field
-            label="Favicon URL"
-            name="faviconUrl"
-            defaultValue={site.faviconUrl ?? ""}
-            placeholder="https://…/favicon.ico"
-          />
-          <CheckboxField
-            label="Enable raw HTML block in page builder"
-            description="When on, admins can embed arbitrary HTML into pages. Disable on multi-tenant setups."
-            name="rawHtmlBlockEnabled"
-            defaultChecked={site.rawHtmlBlockEnabled}
-          />
-          <CheckboxField
-            label="Enable Google OAuth sign-in"
-            description="Requires Google OAuth credentials below."
-            name="googleOauthEnabled"
-            defaultChecked={site.googleOauthEnabled}
-          />
-          <div>
-            <button type="submit" className="cf-btn-primary">
-              Save site settings
-            </button>
+    <>
+      <div className="admin-header">
+        <div>
+          <h1>Settings</h1>
+          <div className="admin-header-sub">
+            — Site identity · provider credentials · {setCount}/
+            {CREDENTIAL_KEYS.length} configured
           </div>
-        </form>
-      </section>
+        </div>
+      </div>
 
-      <section className="flex flex-col gap-6">
-        <header>
-          <h2 className="text-lg font-semibold">Provider credentials</h2>
-          <p className="mt-1 text-sm text-[var(--cf-muted-fg)]">
-            Values are write-only. Existing secrets are masked; submit a new
-            value to rotate.
-          </p>
-        </header>
-        {CREDENTIAL_GROUPS.map((group) => (
-          <div
-            key={group.title}
-            className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-6"
+      <div className="admin-section">
+        <section style={{ ...CARD_STYLE, marginBottom: 20 }}>
+          <div className="mono-label" style={{ marginBottom: 4 }}>
+            — Site identity
+          </div>
+          <h2
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: 22,
+              margin: "2px 0 6px",
+              fontWeight: 600,
+              color: "var(--ink)",
+            }}
           >
-            <h3 className="text-base font-semibold">{group.title}</h3>
-            <div className="mt-4 flex flex-col gap-4">
-              {group.keys.map((key) => {
-                const meta = metaMap.get(key);
-                const info = CREDENTIAL_LABELS[key];
-                return (
-                  <CredentialRow
-                    key={key}
-                    credKey={key}
-                    label={info.label}
-                    hint={info.hint}
-                    isSet={meta?.isSet ?? false}
-                    updatedAt={meta?.updatedAt ?? null}
-                  />
-                );
-              })}
+            How your storefront introduces itself
+          </h2>
+          <p
+            style={{
+              fontSize: 13,
+              color: "var(--ink-3)",
+              margin: "0 0 18px",
+            }}
+          >
+            Shown in browser tab, SEO metadata, and public layout.
+          </p>
+          <form
+            action={saveSiteSettingsAction}
+            style={{ display: "flex", flexDirection: "column", gap: 0 }}
+          >
+            <div className="field-row">
+              <div className="field">
+                <label>SITE NAME</label>
+                <input
+                  type="text"
+                  name="name"
+                  defaultValue={site.name}
+                  required
+                />
+              </div>
+              <div className="field">
+                <label>TAGLINE</label>
+                <input
+                  type="text"
+                  name="tagline"
+                  defaultValue={site.tagline ?? ""}
+                  placeholder="Marketing, taught well."
+                />
+              </div>
+            </div>
+            <div className="field-row">
+              <div className="field">
+                <label>LOGO URL</label>
+                <input
+                  type="url"
+                  name="logoUrl"
+                  defaultValue={site.logoUrl ?? ""}
+                  placeholder="https://…/logo.svg"
+                />
+              </div>
+              <div className="field">
+                <label>FAVICON URL</label>
+                <input
+                  type="url"
+                  name="faviconUrl"
+                  defaultValue={site.faviconUrl ?? ""}
+                  placeholder="https://…/favicon.ico"
+                />
+              </div>
+            </div>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                padding: "12px 0",
+                borderTop: "1px dotted var(--hair-2)",
+                marginBottom: 14,
+              }}
+            >
+              <input
+                type="checkbox"
+                name="googleOauthEnabled"
+                defaultChecked={site.googleOauthEnabled}
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                <span
+                  style={{
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                    color: "var(--ink)",
+                  }}
+                >
+                  Enable Google OAuth sign-in
+                </span>
+                <div
+                  className="mono-label"
+                  style={{ fontSize: 10, marginTop: 3 }}
+                >
+                  — REQUIRES GOOGLE OAUTH CREDENTIALS BELOW
+                </div>
+              </span>
+            </label>
+            <div>
+              <button type="submit" className="btn btn-primary">
+                Save site settings
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "end",
+              justifyContent: "space-between",
+              marginBottom: 14,
+            }}
+          >
+            <div>
+              <div className="mono-label">— Provider credentials</div>
+              <h2
+                style={{
+                  fontFamily: "var(--serif)",
+                  fontSize: 22,
+                  margin: "6px 0 0",
+                  fontWeight: 600,
+                  color: "var(--ink)",
+                }}
+              >
+                Keys & secrets{" "}
+                <span
+                  style={{
+                    fontStyle: "italic",
+                    color: "var(--ink-3)",
+                    fontSize: 17,
+                    fontWeight: 500,
+                  }}
+                >
+                  — encrypted AES-256-GCM at rest
+                </span>
+              </h2>
             </div>
           </div>
-        ))}
-        <p className="text-xs text-[var(--cf-muted-fg)]">
-          {CREDENTIAL_KEYS.length} credential slots total.
-        </p>
-      </section>
-    </div>
-  );
-}
 
-function Field({
-  label,
-  name,
-  defaultValue,
-  placeholder,
-  required,
-}: {
-  label: string;
-  name: string;
-  defaultValue?: string;
-  placeholder?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
-      <input
-        type="text"
-        name={name}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        required={required}
-        className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-sm"
-      />
-    </label>
-  );
-}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            {CREDENTIAL_GROUPS.map((group) => (
+              <div key={group.title} style={CARD_STYLE}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    justifyContent: "space-between",
+                    marginBottom: 14,
+                  }}
+                >
+                  <div>
+                    <h3
+                      style={{
+                        fontFamily: "var(--serif)",
+                        fontSize: 18,
+                        margin: 0,
+                        fontWeight: 600,
+                        color: "var(--ink)",
+                      }}
+                    >
+                      {group.title}
+                    </h3>
+                    <div
+                      className="mono-label"
+                      style={{ fontSize: 10, marginTop: 3 }}
+                    >
+                      — {group.subtitle.toUpperCase()}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {group.keys.map((key, i) => {
+                    const meta = metaMap.get(key);
+                    const info = CREDENTIAL_LABELS[key];
+                    return (
+                      <CredentialRow
+                        key={key}
+                        credKey={key}
+                        label={info.label}
+                        hint={info.hint}
+                        isSet={meta?.isSet ?? false}
+                        updatedAt={meta?.updatedAt ?? null}
+                        isFirst={i === 0}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
 
-function CheckboxField({
-  label,
-  description,
-  name,
-  defaultChecked,
-}: {
-  label: string;
-  description?: string;
-  name: string;
-  defaultChecked?: boolean;
-}) {
-  return (
-    <label className="flex items-start gap-3 text-sm">
-      <input
-        type="checkbox"
-        name={name}
-        defaultChecked={defaultChecked}
-        className="mt-1"
-      />
-      <span className="flex flex-col">
-        <span className="font-medium">{label}</span>
-        {description ? (
-          <span className="text-xs text-[var(--cf-muted-fg)]">{description}</span>
-        ) : null}
-      </span>
-    </label>
+          <p
+            className="mono-label"
+            style={{ fontSize: 10.5, marginTop: 16, textAlign: "right" }}
+          >
+            — {CREDENTIAL_KEYS.length} CREDENTIAL SLOTS TOTAL
+          </p>
+        </section>
+      </div>
+    </>
   );
 }
 
@@ -222,45 +320,80 @@ function CredentialRow({
   hint,
   isSet,
   updatedAt,
+  isFirst,
 }: {
   credKey: CredentialKey;
   label: string;
   hint?: string;
   isSet: boolean;
   updatedAt: Date | null;
+  isFirst: boolean;
 }) {
-  const statusLabel = isSet
-    ? `Set${updatedAt ? ` · updated ${updatedAt.toLocaleDateString()}` : ""}`
-    : "Not set";
   return (
-    <div className="flex flex-col gap-2 border-t border-[var(--cf-border)] pt-4 first:border-t-0 first:pt-0">
-      <div className="flex items-center justify-between gap-2">
+    <div
+      style={{
+        borderTop: isFirst ? "none" : "1px dotted var(--hair-2)",
+        padding: "16px 0",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
         <div>
-          <div className="text-sm font-medium">{label}</div>
+          <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink)" }}>
+            {label}
+          </div>
           {hint ? (
-            <div className="text-xs text-[var(--cf-muted-fg)]">{hint}</div>
+            <div
+              className="mono-label"
+              style={{ fontSize: 10, marginTop: 3, textTransform: "none" }}
+            >
+              {hint}
+            </div>
           ) : null}
         </div>
         <span
-          className={`text-xs ${
-            isSet ? "text-[var(--cf-accent)]" : "text-[var(--cf-muted-fg)]"
-          }`}
+          className={`status ${isSet ? "status-published" : "status-draft"}`}
         >
-          {statusLabel}
+          {isSet
+            ? `Set${updatedAt ? ` · ${updatedAt.toLocaleDateString()}` : ""}`
+            : "Not set"}
         </span>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <form action={saveCredentialAction} className="flex flex-1 gap-2">
+      <div style={{ display: "flex", gap: 8, alignItems: "stretch" }}>
+        <form
+          action={saveCredentialAction}
+          style={{ display: "flex", flex: 1, gap: 8 }}
+        >
           <input type="hidden" name="key" value={credKey} />
           <input
             type="password"
             name="value"
             required
             autoComplete="off"
-            placeholder={isSet ? "•••••• enter new value to rotate" : "Enter value"}
-            className="flex-1 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-sm font-mono"
+            placeholder={
+              isSet ? "•••••• enter new value to rotate" : "Enter value"
+            }
+            style={{
+              flex: 1,
+              padding: "10px 12px",
+              border: "1px solid var(--hair)",
+              borderRadius: "var(--radius-sm)",
+              background: "var(--paper-3)",
+              fontFamily: "var(--mono)",
+              fontSize: 13,
+              color: "var(--ink)",
+            }}
           />
-          <button type="submit" className="cf-btn-primary">
+          <button type="submit" className="btn btn-ink">
             {isSet ? "Rotate" : "Save"}
           </button>
         </form>
@@ -269,7 +402,8 @@ function CredentialRow({
             <input type="hidden" name="key" value={credKey} />
             <button
               type="submit"
-              className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] px-3 py-2 text-sm text-[var(--cf-muted-fg)] hover:text-[var(--cf-fg)]"
+              className="btn btn-ghost"
+              style={{ fontSize: 12 }}
             >
               Remove
             </button>

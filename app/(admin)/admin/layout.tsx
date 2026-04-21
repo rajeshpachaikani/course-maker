@@ -1,38 +1,150 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/dal";
+import { loadSiteSettings } from "@/lib/theme";
+import { listCoursesAdmin } from "@/lib/courses";
+import { AdminNavItem } from "./nav-item";
+import { SignOutButton } from "@/components/sign-out-button";
 
-const NAV: Array<{ href: "/admin" | "/admin/courses" | "/admin/pages" | "/admin/appearance" | "/admin/settings"; label: string }> = [
-  { href: "/admin", label: "Overview" },
-  { href: "/admin/courses", label: "Courses" },
-  { href: "/admin/pages", label: "Pages" },
-  { href: "/admin/appearance", label: "Appearance" },
-  { href: "/admin/settings", label: "Settings" },
+const GROUPS: Array<{
+  title: string;
+  items: Array<{
+    href: "/admin" | "/admin/courses" | "/admin/appearance" | "/admin/settings";
+    label: string;
+    icon: "grid" | "book" | "palette" | "settings";
+    badgeKey?: "courses";
+  }>;
+}> = [
+  {
+    title: "Overview",
+    items: [{ href: "/admin", label: "Dashboard", icon: "grid" }],
+  },
+  {
+    title: "Catalogue",
+    items: [
+      {
+        href: "/admin/courses",
+        label: "Courses",
+        icon: "book",
+        badgeKey: "courses",
+      },
+    ],
+  },
+  {
+    title: "Storefront",
+    items: [
+      { href: "/admin/appearance", label: "Theme & Brand", icon: "palette" },
+      { href: "/admin/settings", label: "Settings", icon: "settings" },
+    ],
+  },
 ];
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  await requireAdmin();
+export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-1 min-h-full">
-      <aside className="w-56 shrink-0 border-r border-[var(--cf-border)] bg-[var(--cf-surface)]">
-        <div className="p-4 text-sm font-semibold">Admin</div>
-        <nav className="flex flex-col gap-1 px-2">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="cf-admin-nav-item rounded-[var(--cf-radius)] px-3 py-2 text-sm text-[var(--cf-muted-fg)] hover:bg-[var(--cf-bg)] hover:text-[var(--cf-fg)]"
+    <Suspense fallback={<AdminShellSkeleton />}>
+      <AdminShell>{children}</AdminShell>
+    </Suspense>
+  );
+}
+
+async function AdminShell({ children }: { children: ReactNode }) {
+  const session = await requireAdmin();
+  const [site, courseList] = await Promise.all([
+    loadSiteSettings(),
+    listCoursesAdmin(),
+  ]);
+  const badges = { courses: courseList.length };
+  const userName = (session.user as { name?: string }).name ?? "Admin";
+  const firstBrand = (site.name || "C").trim().charAt(0).toUpperCase() || "C";
+
+  return (
+    <div className="admin-root">
+      <aside className="admin-nav">
+        <Link href="/" className="brand" style={{ textDecoration: "none" }}>
+          <span className="brand-mark">{firstBrand}</span>
+          <span style={{ fontSize: 19 }}>{site.name}</span>
+        </Link>
+
+        {GROUPS.map((g) => (
+          <div key={g.title}>
+            <div className="admin-nav-section">— {g.title}</div>
+            {g.items.map((it) => (
+              <AdminNavItem
+                key={it.href}
+                href={it.href}
+                icon={it.icon}
+                label={it.label}
+                badge={it.badgeKey ? badges[it.badgeKey] : undefined}
+              />
+            ))}
+          </div>
+        ))}
+
+        <div
+          style={{
+            marginTop: "auto",
+            paddingTop: 20,
+            borderTop: "1px dotted var(--hair-2)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              className="avatar"
+              style={{ width: 32, height: 32, fontSize: 13 }}
             >
-              {item.label}
+              {(userName[0] ?? "A").toUpperCase()}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  color: "var(--ink)",
+                }}
+              >
+                {userName}
+              </div>
+              <div className="mono-label" style={{ fontSize: 10 }}>
+                Admin · workspace
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <Link
+              href="/dashboard"
+              className="btn btn-ghost"
+              style={{ fontSize: 11, padding: "6px 10px", flex: 1 }}
+            >
+              My courses
             </Link>
-          ))}
-        </nav>
+            <SignOutButton
+              className="btn btn-ghost"
+              style={{ fontSize: 11, padding: "6px 10px", flex: 1 }}
+            />
+          </div>
+        </div>
       </aside>
-      <main className="flex-1 px-8 py-8">{children}</main>
+      <main className="admin-main">{children}</main>
+    </div>
+  );
+}
+
+function AdminShellSkeleton() {
+  return (
+    <div className="admin-root">
+      <aside className="admin-nav" aria-hidden style={{ opacity: 0.35 }}>
+        <div className="brand">
+          <span className="brand-mark">·</span>
+          <span style={{ fontSize: 19 }}>Loading…</span>
+        </div>
+      </aside>
+      <main className="admin-main" />
     </div>
   );
 }

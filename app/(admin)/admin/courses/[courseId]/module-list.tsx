@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
 import Link from "next/link";
 import { reorderModulesAction } from "../actions";
 
@@ -13,12 +13,15 @@ interface ModuleItem {
 
 export function ModuleList({
   courseId,
-  modules: initial,
+  modules,
 }: {
   courseId: string;
   modules: ModuleItem[];
 }) {
-  const [items, setItems] = useState(initial);
+  const [items, setItems] = useOptimistic<ModuleItem[], ModuleItem[]>(
+    modules,
+    (_, next) => next,
+  );
   const [pending, start] = useTransition();
 
   function move(index: number, delta: number) {
@@ -28,8 +31,8 @@ export function ModuleList({
     const tmp = next[index];
     next[index] = next[target];
     next[target] = tmp;
-    setItems(next);
     start(async () => {
+      setItems(next);
       await reorderModulesAction(
         courseId,
         next.map((m) => m.id),
@@ -39,59 +42,128 @@ export function ModuleList({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-[var(--cf-radius)] border border-dashed border-[var(--cf-border)] p-6 text-center text-sm text-[var(--cf-muted-fg)]">
-        No modules yet. Add one above.
+      <div
+        style={{
+          background: "var(--paper-2)",
+          border: "1px dashed var(--hair-2)",
+          borderRadius: "var(--radius-lg)",
+          padding: 36,
+          textAlign: "center",
+          color: "var(--ink-3)",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: 18,
+            color: "var(--ink-2)",
+            marginBottom: 4,
+          }}
+        >
+          No modules yet.
+        </div>
+        <div className="mono-label" style={{ fontSize: 10 }}>
+          Add one above to start structuring your course.
+        </div>
       </div>
     );
   }
 
   return (
-    <ul className="flex flex-col gap-2" aria-busy={pending}>
+    <ul
+      aria-busy={pending}
+      style={{
+        listStyle: "none",
+        padding: 0,
+        margin: 0,
+        display: "flex",
+        flexDirection: "column",
+        gap: 0,
+      }}
+    >
       {items.map((m, i) => (
-        <li
-          key={m.id}
-          className="flex items-center gap-3 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] p-3"
-        >
-          <div className="flex flex-col gap-1">
-            <button
-              type="button"
-              onClick={() => move(i, -1)}
-              disabled={i === 0 || pending}
-              aria-label="Move up"
-              className="rounded border border-[var(--cf-border)] px-2 py-0.5 text-xs disabled:opacity-30"
+        <li key={m.id}>
+          <div className="module-section-header">
+            <span
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 28,
+                color: "var(--ink-3)",
+                fontWeight: 500,
+                minWidth: 38,
+              }}
             >
-              ↑
-            </button>
-            <button
-              type="button"
-              onClick={() => move(i, 1)}
-              disabled={i === items.length - 1 || pending}
-              aria-label="Move down"
-              className="rounded border border-[var(--cf-border)] px-2 py-0.5 text-xs disabled:opacity-30"
-            >
-              ↓
-            </button>
-          </div>
-          <div className="flex-1">
-            <Link
-              href={
-                `/admin/courses/${courseId}/modules/${m.id}` as `/admin/courses/${string}/modules/${string}`
-              }
-              className="text-sm font-medium hover:underline"
-            >
-              {m.title}
-            </Link>
-            <div className="mt-0.5 text-xs text-[var(--cf-muted-fg)]">
-              {m.lessons.length} lesson{m.lessons.length === 1 ? "" : "s"}
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <h4>{m.title}</h4>
+            <span className="mono-label">
+              {m.lessons.length} {m.lessons.length === 1 ? "LESSON" : "LESSONS"}
+            </span>
+            <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+              <button
+                type="button"
+                onClick={() => move(i, -1)}
+                disabled={i === 0 || pending}
+                aria-label="Move up"
+                className="btn btn-ghost"
+                style={{
+                  padding: "4px 10px",
+                  fontSize: 12,
+                  opacity: i === 0 ? 0.3 : 1,
+                }}
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                onClick={() => move(i, 1)}
+                disabled={i === items.length - 1 || pending}
+                aria-label="Move down"
+                className="btn btn-ghost"
+                style={{
+                  padding: "4px 10px",
+                  fontSize: 12,
+                  opacity: i === items.length - 1 ? 0.3 : 1,
+                }}
+              >
+                ↓
+              </button>
+              <Link
+                href={
+                  `/admin/courses/${courseId}/modules/${m.id}` as `/admin/courses/${string}/modules/${string}`
+                }
+                className="btn btn-ghost"
+                style={{ padding: "4px 12px", fontSize: 12 }}
+              >
+                Edit →
+              </Link>
             </div>
           </div>
           <Link
             href={
               `/admin/courses/${courseId}/modules/${m.id}` as `/admin/courses/${string}/modules/${string}`
             }
-            className="text-xs text-[var(--cf-muted-fg)] hover:text-[var(--cf-fg)]"
+            className="lesson-row"
+            style={{
+              textDecoration: "none",
+              gridTemplateColumns: "40px 1fr auto",
+            }}
           >
-            Edit →
+            <div className="lesson-thumb-sm bg-plum">
+              {String(i + 1).padStart(2, "0")}
+            </div>
+            <div>
+              <div className="lesson-row-title">{m.title}</div>
+              <div className="lesson-row-meta">
+                {m.lessons.length}{" "}
+                {m.lessons.length === 1 ? "LESSON" : "LESSONS"} · CLICK TO
+                MANAGE
+              </div>
+            </div>
+            <span className="mono-label" style={{ fontSize: 10 }}>
+              EDIT →
+            </span>
           </Link>
         </li>
       ))}

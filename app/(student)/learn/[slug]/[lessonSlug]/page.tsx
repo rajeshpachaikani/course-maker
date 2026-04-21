@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Route } from "next";
@@ -28,13 +29,25 @@ export async function generateMetadata({
   return { title: lesson ? `${lesson.title} · ${course.title}` : course.title };
 }
 
-export default async function LessonPage({
+export default function LessonPage({
   params,
 }: {
   params: Promise<{ slug: string; lessonSlug: string }>;
 }) {
-  const session = await requireStudent();
+  return (
+    <Suspense fallback={<LessonSkeleton />}>
+      <LessonContent params={params} />
+    </Suspense>
+  );
+}
+
+async function LessonContent({
+  params,
+}: {
+  params: Promise<{ slug: string; lessonSlug: string }>;
+}) {
   const { slug, lessonSlug } = await params;
+  const session = await requireStudent();
   const course = await getCourseBySlug(slug);
   if (!course) notFound();
   const enrolled = await isEnrolled(session.user.id, course.id);
@@ -64,55 +77,141 @@ export default async function LessonPage({
   }
 
   return (
-    <main className="flex flex-col gap-6 py-6">
-      <header>
-        <div className="text-xs uppercase tracking-wide text-[var(--cf-muted-fg)]">
-          {mod.title}
-        </div>
-        <h1 className="mt-1 text-2xl font-semibold">{lesson.title}</h1>
-      </header>
-
-      {embedUrl ? (
-        <VideoPlayer
-          lessonId={lesson.id}
-          embedUrl={embedUrl}
-          initialPositionSec={progress?.lastPositionSec ?? 0}
-          completed={progress?.completedAt != null}
-        />
-      ) : (
-        <div className="rounded-[var(--cf-radius)] border border-dashed border-[var(--cf-border)] bg-[var(--cf-surface)] p-8 text-center text-sm text-[var(--cf-muted-fg)]">
-          Video not available yet.
-        </div>
-      )}
-
-      {lesson.descriptionTiptap ? (
-        <article className="prose max-w-none">
-          <TiptapRender doc={lesson.descriptionTiptap as never} />
-        </article>
-      ) : null}
-
-      <nav className="mt-2 flex items-center justify-between border-t border-[var(--cf-border)] pt-4 text-sm">
-        {prev ? (
-          <Link
-            href={`/learn/${course.slug}/${prev.lesson.slug}` as Route}
-            className="text-[var(--cf-muted-fg)] hover:underline"
-          >
-            ← {prev.lesson.title}
-          </Link>
+    <>
+      <div className="video-shell">
+        {embedUrl ? (
+          <VideoPlayer
+            lessonId={lesson.id}
+            embedUrl={embedUrl}
+            initialPositionSec={progress?.lastPositionSec ?? 0}
+            completed={progress?.completedAt != null}
+          />
         ) : (
-          <span />
-        )}
-        {next ? (
-          <Link
-            href={`/learn/${course.slug}/${next.lesson.slug}` as Route}
-            className="cf-btn-primary"
+          <div
+            style={{
+              display: "grid",
+              placeItems: "center",
+              color: "var(--ink-3)",
+              padding: 40,
+              textAlign: "center",
+            }}
           >
-            Next: {next.lesson.title} →
-          </Link>
-        ) : (
-          <span className="text-[var(--cf-muted-fg)]">Course complete</span>
+            <div>
+              <div
+                style={{
+                  fontFamily: "var(--serif)",
+                  fontSize: 22,
+                  color: "var(--ink-2)",
+                  marginBottom: 8,
+                }}
+              >
+                Video not available yet.
+              </div>
+              <div className="mono-label">
+                Check back once the instructor uploads it.
+              </div>
+            </div>
+          </div>
         )}
-      </nav>
-    </main>
+      </div>
+
+      <div
+        style={{
+          padding: "24px 32px 32px",
+          borderTop: "1px solid var(--hair)",
+          background: "oklch(0.1 0.025 300)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 20,
+        }}
+      >
+        <div>
+          <div className="mono-label">— {mod.title}</div>
+          <h1
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: 30,
+              margin: "6px 0 0",
+              fontWeight: 700,
+              letterSpacing: "-0.015em",
+              color: "var(--ink)",
+            }}
+          >
+            {lesson.title}
+          </h1>
+        </div>
+
+        {lesson.descriptionTiptap ? (
+          <article
+            className="prose max-w-none"
+            style={{ color: "var(--ink-2)", fontSize: 14.5, lineHeight: 1.6 }}
+          >
+            <TiptapRender doc={lesson.descriptionTiptap as never} />
+          </article>
+        ) : null}
+
+        <nav
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingTop: 16,
+            borderTop: "1px dotted var(--hair-2)",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          {prev ? (
+            <Link
+              href={`/learn/${course.slug}/${prev.lesson.slug}` as Route}
+              className="btn btn-ghost"
+            >
+              ← {prev.lesson.title}
+            </Link>
+          ) : (
+            <span />
+          )}
+          {next ? (
+            <Link
+              href={`/learn/${course.slug}/${next.lesson.slug}` as Route}
+              className="btn btn-primary"
+            >
+              Next: {next.lesson.title} →
+            </Link>
+          ) : (
+            <span className="mono-label">Course complete</span>
+          )}
+        </nav>
+      </div>
+    </>
+  );
+}
+
+function LessonSkeleton() {
+  return (
+    <>
+      <div
+        className="video-shell"
+        style={{
+          display: "grid",
+          placeItems: "center",
+          opacity: 0.5,
+        }}
+        aria-hidden
+      >
+        <div className="mono-label">Loading lesson…</div>
+      </div>
+      <div
+        style={{
+          padding: "24px 32px 32px",
+          borderTop: "1px solid var(--hair)",
+          background: "oklch(0.1 0.025 300)",
+          opacity: 0.5,
+        }}
+        aria-hidden
+      >
+        <div className="mono-label">Loading…</div>
+      </div>
+    </>
   );
 }
