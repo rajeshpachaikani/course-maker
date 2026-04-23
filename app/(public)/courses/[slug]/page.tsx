@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { connection } from "next/server";
 import { getCourseBySlug, getCourseTree } from "@/lib/courses";
 import { TiptapRender } from "@/components/tiptap-render";
 import { PublicTopbar } from "@/components/public-topbar";
@@ -53,6 +54,7 @@ async function CourseDetailContent({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await connection();
   const { slug } = await params;
   const course = await getCourseBySlug(slug);
   if (!course || !course.published) notFound();

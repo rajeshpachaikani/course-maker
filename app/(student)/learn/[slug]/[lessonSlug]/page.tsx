@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Route } from "next";
+import { connection } from "next/server";
 import { requireStudent } from "@/lib/dal";
 import { getCourseBySlug, getCourseTree } from "@/lib/courses";
 import { isEnrolled } from "@/lib/enrollments";
@@ -46,6 +47,7 @@ async function LessonContent({
 }: {
   params: Promise<{ slug: string; lessonSlug: string }>;
 }) {
+  await connection();
   const { slug, lessonSlug } = await params;
   const session = await requireStudent();
   const course = await getCourseBySlug(slug);

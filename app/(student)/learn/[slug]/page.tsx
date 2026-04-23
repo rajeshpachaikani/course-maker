@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import type { Route } from "next";
+import { connection } from "next/server";
 import { getCourseBySlug, getCourseTree } from "@/lib/courses";
 
 export const metadata = { title: "Course" };
@@ -22,6 +23,7 @@ async function LandingRedirect({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await connection();
   const { slug } = await params;
   const course = await getCourseBySlug(slug);
   if (!course) notFound();

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { loadSiteSettings } from "@/lib/theme";
 import { listPublishedCourses } from "@/lib/courses";
 import { PublicTopbar } from "@/components/public-topbar";
@@ -38,6 +39,7 @@ function HomeSkeleton() {
 }
 
 async function HomeContent() {
+  await connection();
   const [site, courses] = await Promise.all([
     loadSiteSettings(),
     listPublishedCourses(),

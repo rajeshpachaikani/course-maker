@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { listPublishedCourses } from "@/lib/courses";
 import { PublicTopbar } from "@/components/public-topbar";
 
@@ -39,6 +40,7 @@ function CoursesSkeleton() {
 }
 
 async function CoursesGrid() {
+  await connection();
   const courses = await listPublishedCourses();
   return (
     <>

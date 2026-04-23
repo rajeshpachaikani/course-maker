@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { requireStudent } from "@/lib/dal";
 import { getCourseBySlug, getCourseTree } from "@/lib/courses";
 import { isEnrolled } from "@/lib/enrollments";
@@ -27,6 +28,7 @@ async function LearnShellData({
   params: Promise<{ slug: string }>;
   children: React.ReactNode;
 }) {
+  await connection();
   const { slug } = await params;
   const session = await requireStudent();
   const course = await getCourseBySlug(slug);

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Route } from "next";
+import { connection } from "next/server";
 import { requireStudent } from "@/lib/dal";
 import { listUserEnrollments } from "@/lib/enrollments";
 import { getCourseTree } from "@/lib/courses";
@@ -41,6 +42,7 @@ export default function DashboardPage() {
 }
 
 async function DashboardContent() {
+  await connection();
   const session = await requireStudent();
   const userName = (session.user as { name?: string }).name ?? "there";
   const enrollments = await listUserEnrollments(session.user.id);

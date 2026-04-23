@@ -1,5 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
+import { connection } from "next/server";
 import { requireStaff } from "@/lib/dal";
 import { loadSiteSettings } from "@/lib/theme";
 import { listCoursesAdmin } from "@/lib/courses";
@@ -80,6 +81,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 }
 
 async function AdminShell({ children }: { children: ReactNode }) {
+  await connection();
   const { session, caps } = await requireStaff();
   const [site, courseList] = await Promise.all([
     loadSiteSettings(),
