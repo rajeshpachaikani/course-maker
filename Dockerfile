@@ -1,19 +1,22 @@
 ARG BUN_VERSION=1.3.0
+ARG NODE_VERSION=22
 
 FROM oven/bun:${BUN_VERSION}-alpine AS base
 WORKDIR /app
 
-# --- install dependencies ---
+# --- install dependencies (bun is fast + respects bun.lock) ---
 FROM base AS deps
 COPY package.json bun.lock* bun.lockb* ./
 RUN bun install --frozen-lockfile
 
-# --- build ---
-FROM base AS builder
+# --- build with node/turbopack (bun's turbopack chunk loader
+# fails on arm64 with ChunkLoadError in page-data collection) ---
+FROM node:${NODE_VERSION}-alpine AS builder
+WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN bun run build
+RUN node node_modules/next/dist/bin/next build
 
 # --- runtime ---
 FROM base AS runner
