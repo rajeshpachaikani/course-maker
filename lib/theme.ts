@@ -53,47 +53,55 @@ const DEFAULT_THEME: ResolvedTheme = {
   customCss: null,
 };
 
+const DEFAULT_SITE = {
+  id: "singleton" as const,
+  name: "CourseForge",
+  tagline: null as string | null,
+  logoUrl: null as string | null,
+  faviconUrl: null as string | null,
+  googleOauthEnabled: false,
+  updatedAt: new Date(0),
+};
+
 export async function loadTheme(): Promise<ResolvedTheme> {
   "use cache";
   cacheTag(THEME_TAG);
   cacheLife("max");
-  const rows = await db
-    .select()
-    .from(themeSettings)
-    .where(eq(themeSettings.id, "singleton"))
-    .limit(1);
-  const row = rows[0];
-  if (!row) return DEFAULT_THEME;
-  const colors = (row.colors as Partial<ThemeColors>) ?? {};
-  const fonts = (row.fonts as Partial<ThemeFonts>) ?? {};
-  return {
-    colors: { ...DEFAULT_THEME.colors, ...colors },
-    fonts: { ...DEFAULT_THEME.fonts, ...fonts },
-    borderRadius: row.borderRadius ?? DEFAULT_THEME.borderRadius,
-    customCss: row.customCss,
-  };
+  try {
+    const rows = await db
+      .select()
+      .from(themeSettings)
+      .where(eq(themeSettings.id, "singleton"))
+      .limit(1);
+    const row = rows[0];
+    if (!row) return DEFAULT_THEME;
+    const colors = (row.colors as Partial<ThemeColors>) ?? {};
+    const fonts = (row.fonts as Partial<ThemeFonts>) ?? {};
+    return {
+      colors: { ...DEFAULT_THEME.colors, ...colors },
+      fonts: { ...DEFAULT_THEME.fonts, ...fonts },
+      borderRadius: row.borderRadius ?? DEFAULT_THEME.borderRadius,
+      customCss: row.customCss,
+    };
+  } catch {
+    return DEFAULT_THEME;
+  }
 }
 
 export async function loadSiteSettings() {
   "use cache";
   cacheTag(SITE_TAG);
   cacheLife("max");
-  const rows = await db
-    .select()
-    .from(siteSettings)
-    .where(eq(siteSettings.id, "singleton"))
-    .limit(1);
-  return (
-    rows[0] ?? {
-      id: "singleton" as const,
-      name: "CourseForge",
-      tagline: null,
-      logoUrl: null,
-      faviconUrl: null,
-      googleOauthEnabled: false,
-      updatedAt: new Date(),
-    }
-  );
+  try {
+    const rows = await db
+      .select()
+      .from(siteSettings)
+      .where(eq(siteSettings.id, "singleton"))
+      .limit(1);
+    return rows[0] ?? DEFAULT_SITE;
+  } catch {
+    return DEFAULT_SITE;
+  }
 }
 
 type SiteSettingsPatch = {
