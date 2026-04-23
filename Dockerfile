@@ -31,8 +31,10 @@ RUN bun build lib/db/migrate.ts \
   --target=bun \
   --minify
 
-# --- runtime ---
-FROM base AS runner
+# --- runtime (node; bun's turbopack chunk loader fails on arm64
+# when serving the standalone output, mirroring the build stage) ---
+FROM node:${NODE_VERSION}-alpine AS runner
+WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
@@ -40,6 +42,11 @@ ENV HOSTNAME=0.0.0.0
 
 RUN addgroup -S -g 1001 app \
  && adduser -S -u 1001 -G app app
+
+# Pull the bun binary from the bun image — used only by the
+# migrator. Cheaper than a from-source install + avoids arm64 glibc issues.
+RUN apk add --no-cache libstdc++ libgcc
+COPY --from=base /usr/local/bin/bun /usr/local/bin/bun
 
 # Next.js standalone output (includes minimal traced node_modules)
 COPY --from=builder --chown=app:app /app/.next/standalone ./
@@ -58,4 +65,4 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 USER app
 EXPOSE 3000
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["bun", "server.js"]
+CMD ["node", "server.js"]
