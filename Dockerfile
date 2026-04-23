@@ -18,6 +18,19 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN node node_modules/next/dist/bin/next build
 
+# --- bundle the migrator as a single JS file so it survives the
+# Next.js standalone trim (drizzle-orm isn't pulled in by pages) ---
+FROM base AS migrator-bundler
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY lib ./lib
+COPY drizzle.config.ts ./
+COPY tsconfig.json ./
+RUN bun build lib/db/migrate.ts \
+  --outfile=/migrate.js \
+  --target=bun \
+  --minify
+
 # --- runtime ---
 FROM base AS runner
 ENV NODE_ENV=production
@@ -33,11 +46,11 @@ COPY --from=builder --chown=app:app /app/.next/standalone ./
 COPY --from=builder --chown=app:app /app/.next/static ./.next/static
 COPY --from=builder --chown=app:app /app/public ./public
 
-# Migration assets (drizzle-orm is traced into standalone; pg + drizzle-orm
-# are runtime deps so they're available for the migrator too).
+# Migration assets: SQL files + the bundled migrator
+# (drizzle-orm is not pulled into the Next standalone trace, so we
+# ship a self-contained bun-bundled migrator).
 COPY --from=builder --chown=app:app /app/drizzle ./drizzle
-COPY --from=builder --chown=app:app /app/drizzle.config.ts ./drizzle.config.ts
-COPY --from=builder --chown=app:app /app/lib/db/migrate.ts ./lib/db/migrate.ts
+COPY --from=migrator-bundler --chown=app:app /migrate.js ./migrate.js
 
 COPY --chown=app:app docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
