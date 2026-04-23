@@ -39,8 +39,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    expose:
-      - "3000"
+    ports:
+      - "127.0.0.1:${APP_HOST_PORT:-4210}:3000"
     healthcheck:
       test:
         [
@@ -55,17 +55,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: courseforge-nginx
-    restart: unless-stopped
-    ports:
-      - "${NGINX_HTTP_PORT:-80}:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - app
 
 volumes:
   pgdata:
