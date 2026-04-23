@@ -1,4 +1,5 @@
 import { asc } from "drizzle-orm";
+import { connection } from "next/server";
 import { requireAdmin } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { users, type TrainerGrants } from "@/lib/db/schema";
@@ -30,6 +31,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<{ err?: string }>;
 }) {
+  await connection();
   const { session } = await requireAdmin();
   const [rows, sp] = await Promise.all([
     db

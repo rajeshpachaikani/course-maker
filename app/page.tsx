@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Route } from "next";
+import { Suspense } from "react";
 import { loadSiteSettings } from "@/lib/theme";
 import { listPublishedCourses } from "@/lib/courses";
 import { PublicTopbar } from "@/components/public-topbar";
@@ -17,7 +18,26 @@ const THUMB_BG = [
   "bg-brick",
 ];
 
-export default async function HomePage() {
+export default function HomePage() {
+  return (
+    <div className="student-root">
+      <PublicTopbar active="courses" />
+      <Suspense fallback={<HomeSkeleton />}>
+        <HomeContent />
+      </Suspense>
+    </div>
+  );
+}
+
+function HomeSkeleton() {
+  return (
+    <section className="hero">
+      <div className="mono-label">— Loading…</div>
+    </section>
+  );
+}
+
+async function HomeContent() {
   const [site, courses] = await Promise.all([
     loadSiteSettings(),
     listPublishedCourses(),
@@ -28,9 +48,7 @@ export default async function HomePage() {
   const totalCourses = published.length;
 
   return (
-    <div className="student-root">
-      <PublicTopbar active="courses" />
-
+    <>
       <section className="hero">
         <div>
           <div className="hero-eyebrow">— {site.name}</div>
@@ -262,6 +280,6 @@ export default async function HomePage() {
           </div>
         ) : null}
       </div>
-    </div>
+    </>
   );
 }

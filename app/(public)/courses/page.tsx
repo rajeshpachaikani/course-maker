@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Route } from "next";
+import { Suspense } from "react";
 import { listPublishedCourses } from "@/lib/courses";
 import { PublicTopbar } from "@/components/public-topbar";
 
@@ -18,11 +19,29 @@ const THUMB_BG = [
   "bg-brick",
 ];
 
-export default async function CoursesIndexPage() {
-  const courses = await listPublishedCourses();
+export default function CoursesIndexPage() {
   return (
     <div className="student-root">
       <PublicTopbar active="courses" />
+      <Suspense fallback={<CoursesSkeleton />}>
+        <CoursesGrid />
+      </Suspense>
+    </div>
+  );
+}
+
+function CoursesSkeleton() {
+  return (
+    <div className="section-head" style={{ paddingTop: 56 }}>
+      <div className="mono-label">— Loading courses…</div>
+    </div>
+  );
+}
+
+async function CoursesGrid() {
+  const courses = await listPublishedCourses();
+  return (
+    <>
       <div className="section-head" style={{ paddingTop: 56 }}>
         <div>
           <div className="mono-label" style={{ marginBottom: 8 }}>— The Catalogue</div>
@@ -102,6 +121,6 @@ export default async function CoursesIndexPage() {
           })}
         </div>
       )}
-    </div>
+    </>
   );
 }

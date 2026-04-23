@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { requireAdmin } from "@/lib/dal";
 import { loadSiteSettings } from "@/lib/theme";
 import {
@@ -90,6 +91,7 @@ export default async function AdminSettingsPage({
 }: {
   searchParams: Promise<{ k?: string; s?: string; m?: string }>;
 }) {
+  await connection();
   await requireAdmin();
   const [site, credMeta, sp] = await Promise.all([
     loadSiteSettings(),

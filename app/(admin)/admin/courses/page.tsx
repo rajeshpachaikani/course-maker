@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { listCoursesAdmin } from "@/lib/courses";
 import { createCourseAction } from "./actions";
 import { DeleteCourseButton } from "./delete-course-button";
@@ -27,6 +28,7 @@ function formatPrice(cents: number, currency: string, isFree: boolean) {
 }
 
 export default async function AdminCoursesPage() {
+  await connection();
   const courses = await listCoursesAdmin();
   const published = courses.filter((c) => c.published).length;
   const draft = courses.length - published;

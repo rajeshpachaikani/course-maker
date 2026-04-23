@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { connection } from "next/server";
 import { getCourseTree } from "@/lib/courses";
 import { ModuleForm } from "./module-form";
 import { LessonList } from "./lesson-list";
@@ -15,6 +16,7 @@ export default async function ModuleEditPage({
 }: {
   params: Promise<{ courseId: string; moduleId: string }>;
 }) {
+  await connection();
   const { courseId, moduleId } = await params;
   const tree = await getCourseTree(courseId);
   if (!tree) notFound();

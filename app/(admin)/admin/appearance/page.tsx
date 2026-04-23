@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { requireAdmin } from "@/lib/dal";
 import { loadTheme } from "@/lib/theme";
 import { AppearanceForm } from "./appearance-form";
@@ -5,6 +6,7 @@ import { AppearanceForm } from "./appearance-form";
 export const metadata = { title: "Appearance" };
 
 export default async function AdminAppearancePage() {
+  await connection();
   await requireAdmin();
   const theme = await loadTheme();
   return (

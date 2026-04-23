@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { connection } from "next/server";
 import { requireStaff } from "@/lib/dal";
 import { getCourseTree } from "@/lib/courses";
 import { CourseMetaForm } from "./course-meta-form";
@@ -14,6 +15,7 @@ export default async function CourseEditPage({
 }: {
   params: Promise<{ courseId: string }>;
 }) {
+  await connection();
   const { courseId } = await params;
   const { caps } = await requireStaff();
   const tree = await getCourseTree(courseId);
