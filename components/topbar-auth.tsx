@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { getCurrentUser, currentUserIsAdmin } from "@/lib/dal";
+import { getCurrentUser, currentUserIsStaff } from "@/lib/dal";
 import { SignOutButton } from "./sign-out-button";
 
 export async function TopbarAuth() {
-  const [user, isAdmin] = await Promise.all([
+  const [user, isStaff] = await Promise.all([
     getCurrentUser(),
-    currentUserIsAdmin(),
+    currentUserIsStaff(),
   ]);
 
   if (!user) {
@@ -42,7 +42,7 @@ export async function TopbarAuth() {
       <Link href={"/dashboard" as Route} className="btn btn-ink">
         Dashboard
       </Link>
-      {isAdmin ? (
+      {isStaff ? (
         <Link href={"/admin" as Route} className="btn btn-ghost">
           Admin
         </Link>

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { requireStaff } from "@/lib/dal";
 import { getCourseTree } from "@/lib/courses";
 import { CourseMetaForm } from "./course-meta-form";
 import { ModuleList } from "./module-list";
@@ -14,6 +15,7 @@ export default async function CourseEditPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
+  const { caps } = await requireStaff();
   const tree = await getCourseTree(courseId);
   if (!tree) notFound();
 
@@ -56,7 +58,11 @@ export default async function CourseEditPage({
       <div className="admin-section">
         <div className="editor-grid">
           <div>
-            <CourseMetaForm course={tree.course} />
+            <CourseMetaForm
+              course={tree.course}
+              canSetPricing={caps.canSetPricing}
+              canPublishCourse={caps.canPublishCourse}
+            />
           </div>
 
           <div>

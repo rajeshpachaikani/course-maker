@@ -1,18 +1,27 @@
 import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
-import { requireAdmin } from "@/lib/dal";
+import { requireStaff } from "@/lib/dal";
 import { loadSiteSettings } from "@/lib/theme";
 import { listCoursesAdmin } from "@/lib/courses";
 import { AdminNavItem } from "./nav-item";
 import { SignOutButton } from "@/components/sign-out-button";
 
+type AdminRoute =
+  | "/admin"
+  | "/admin/courses"
+  | "/admin/appearance"
+  | "/admin/settings"
+  | "/admin/users";
+
 const GROUPS: Array<{
   title: string;
+  adminOnly?: boolean;
   items: Array<{
-    href: "/admin" | "/admin/courses" | "/admin/appearance" | "/admin/settings";
+    href: AdminRoute;
     label: string;
-    icon: "grid" | "book" | "palette" | "settings";
+    icon: "grid" | "book" | "palette" | "settings" | "users";
     badgeKey?: "courses";
+    adminOnly?: boolean;
   }>;
 }> = [
   {
@@ -32,9 +41,32 @@ const GROUPS: Array<{
   },
   {
     title: "Storefront",
+    adminOnly: true,
     items: [
-      { href: "/admin/appearance", label: "Theme & Brand", icon: "palette" },
-      { href: "/admin/settings", label: "Settings", icon: "settings" },
+      {
+        href: "/admin/appearance",
+        label: "Theme & Brand",
+        icon: "palette",
+        adminOnly: true,
+      },
+      {
+        href: "/admin/settings",
+        label: "Settings",
+        icon: "settings",
+        adminOnly: true,
+      },
+    ],
+  },
+  {
+    title: "Team",
+    adminOnly: true,
+    items: [
+      {
+        href: "/admin/users",
+        label: "Users & roles",
+        icon: "users",
+        adminOnly: true,
+      },
     ],
   },
 ];
@@ -48,14 +80,22 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 }
 
 async function AdminShell({ children }: { children: ReactNode }) {
-  const session = await requireAdmin();
+  const { session, caps } = await requireStaff();
   const [site, courseList] = await Promise.all([
     loadSiteSettings(),
     listCoursesAdmin(),
   ]);
   const badges = { courses: courseList.length };
-  const userName = (session.user as { name?: string }).name ?? "Admin";
+  const userName =
+    (session.user as { name?: string }).name ?? (caps.isAdmin ? "Admin" : "Trainer");
   const firstBrand = (site.name || "C").trim().charAt(0).toUpperCase() || "C";
+
+  const visibleGroups = GROUPS.filter((g) => !g.adminOnly || caps.isAdmin).map(
+    (g) => ({
+      ...g,
+      items: g.items.filter((it) => !it.adminOnly || caps.isAdmin),
+    }),
+  );
 
   return (
     <div className="admin-root">
@@ -65,7 +105,7 @@ async function AdminShell({ children }: { children: ReactNode }) {
           <span style={{ fontSize: 19 }}>{site.name}</span>
         </Link>
 
-        {GROUPS.map((g) => (
+        {visibleGroups.map((g) => (
           <div key={g.title}>
             <div className="admin-nav-section">— {g.title}</div>
             {g.items.map((it) => (
@@ -111,7 +151,7 @@ async function AdminShell({ children }: { children: ReactNode }) {
                 {userName}
               </div>
               <div className="mono-label" style={{ fontSize: 10 }}>
-                Admin · workspace
+                {caps.isAdmin ? "Admin" : "Trainer"} · workspace
               </div>
             </div>
           </div>

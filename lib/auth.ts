@@ -5,6 +5,9 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { count, eq } from "drizzle-orm";
+import { sendEmail } from "@/lib/mailer";
+import { appUrl, registrationEmail } from "@/lib/email-templates";
+import { loadSiteSettings } from "@/lib/theme";
 
 export const auth = betterAuth({
   appName: "CourseForge",
@@ -46,6 +49,24 @@ export const auth = betterAuth({
               role: isFirst ? "admin" : "student",
             },
           };
+        },
+        after: async (user) => {
+          try {
+            const site = await loadSiteSettings();
+            const tpl = registrationEmail({
+              siteName: site.name,
+              userName: user.name,
+              appUrl: appUrl(),
+            });
+            await sendEmail({
+              to: user.email,
+              subject: tpl.subject,
+              html: tpl.html,
+              text: tpl.text,
+            });
+          } catch (err) {
+            console.error("[auth] registration email failed", err);
+          }
         },
       },
     },

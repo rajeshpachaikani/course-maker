@@ -1,7 +1,27 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { TiptapEditor, type JSONContent } from "@/components/tiptap-editor";
+
+function RestrictedNote({ children }: { children: ReactNode }) {
+  return (
+    <div
+      className="mono-label"
+      style={{
+        fontSize: 11,
+        padding: "8px 10px",
+        marginBottom: 12,
+        borderRadius: 6,
+        background: "var(--paper-3)",
+        border: "1px dashed var(--hair-2)",
+        color: "var(--ink-3)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 import {
   updateCourseAction,
   updateCourseDescriptionAction,
@@ -20,9 +40,15 @@ interface CourseMetaFormProps {
     published: boolean;
     descriptionTiptap: unknown;
   };
+  canSetPricing: boolean;
+  canPublishCourse: boolean;
 }
 
-export function CourseMetaForm({ course }: CourseMetaFormProps) {
+export function CourseMetaForm({
+  course,
+  canSetPricing,
+  canPublishCourse,
+}: CourseMetaFormProps) {
   const [pending, start] = useTransition();
   const [descSaving, setDescSaving] = useState(false);
   const [descMessage, setDescMessage] = useState<string | null>(null);
@@ -134,70 +160,92 @@ export function CourseMetaForm({ course }: CourseMetaFormProps) {
             placeholder="https://…/cover.jpg"
           />
         </div>
-        <div className="field-row">
-          <div className="field">
-            <label>PRICE (CENTS)</label>
-            <input
-              type="number"
-              name="priceCents"
-              defaultValue={String(course.priceCents)}
-              min={0}
-            />
+        {canSetPricing ? (
+          <div className="field-row">
+            <div className="field">
+              <label>PRICE (CENTS)</label>
+              <input
+                type="number"
+                name="priceCents"
+                defaultValue={String(course.priceCents)}
+                min={0}
+              />
+            </div>
+            <div className="field">
+              <label>CURRENCY</label>
+              <input
+                type="text"
+                name="currency"
+                defaultValue={course.currency}
+                required
+              />
+            </div>
           </div>
-          <div className="field">
-            <label>CURRENCY</label>
-            <input
-              type="text"
-              name="currency"
-              defaultValue={course.currency}
-              required
-            />
-          </div>
-        </div>
+        ) : (
+          <RestrictedNote>
+            Pricing is managed by an admin ·{" "}
+            {course.isFree
+              ? "Free"
+              : `${course.priceCents / 100} ${course.currency}`}
+          </RestrictedNote>
+        )}
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            padding: "10px 0",
-            borderTop: "1px dotted var(--hair-2)",
-            marginBottom: 14,
-          }}
-        >
-          <label
+        {(canSetPricing || canPublishCourse) && (
+          <div
             style={{
               display: "flex",
-              alignItems: "center",
+              flexDirection: "column",
               gap: 10,
-              fontSize: 13,
-              color: "var(--ink)",
+              padding: "10px 0",
+              borderTop: "1px dotted var(--hair-2)",
+              marginBottom: 14,
             }}
           >
-            <input
-              type="checkbox"
-              name="isFree"
-              defaultChecked={course.isFree}
-            />
-            <span>Free course</span>
-          </label>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              fontSize: 13,
-              color: "var(--ink)",
-            }}
-          >
-            <input
-              type="checkbox"
-              name="published"
-              defaultChecked={course.published}
-            />
-            <span>Published · visible in storefront</span>
-          </label>
-        </div>
+            {canSetPricing && (
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  fontSize: 13,
+                  color: "var(--ink)",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  name="isFree"
+                  defaultChecked={course.isFree}
+                />
+                <span>Free course</span>
+              </label>
+            )}
+            {canPublishCourse && (
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  fontSize: 13,
+                  color: "var(--ink)",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  name="published"
+                  defaultChecked={course.published}
+                />
+                <span>Published · visible in storefront</span>
+              </label>
+            )}
+          </div>
+        )}
+
+        {!canPublishCourse && (
+          <RestrictedNote>
+            Publish visibility is managed by an admin ·{" "}
+            {course.published ? "Published" : "Draft"}
+          </RestrictedNote>
+        )}
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button

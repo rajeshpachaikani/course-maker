@@ -14,7 +14,7 @@ export default function LearnLayout({
   params: Promise<{ slug: string }>;
 }) {
   return (
-    <Suspense fallback={<LearnShellSkeleton>{children}</LearnShellSkeleton>}>
+    <Suspense fallback={<LearnShellSkeleton />}>
       <LearnShellData params={params}>{children}</LearnShellData>
     </Suspense>
   );
@@ -70,7 +70,7 @@ async function LearnShellData({
   );
 }
 
-function LearnShellSkeleton({ children }: { children: React.ReactNode }) {
+function LearnShellSkeleton() {
   return (
     <div className="player-root">
       <div className="player-bar">
@@ -85,7 +85,11 @@ function LearnShellSkeleton({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <div className="player-main">
-        <div className="player-left">{children}</div>
+        <div
+          className="player-left"
+          style={{ opacity: 0.5 }}
+          aria-hidden
+        />
         <div className="player-right" style={{ opacity: 0.35 }} aria-hidden />
       </div>
     </div>

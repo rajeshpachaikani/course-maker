@@ -4,7 +4,11 @@ import { getCurrentUser } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { lessons, modules } from "@/lib/db/schema";
 import { isEnrolled } from "@/lib/enrollments";
-import { upsertLessonProgress } from "@/lib/progress";
+import { upsertLessonProgress, isCourseFullyCompleted } from "@/lib/progress";
+import { getCourseById } from "@/lib/courses";
+import { sendEmail } from "@/lib/mailer";
+import { loadSiteSettings } from "@/lib/theme";
+import { appUrl, completionEmail } from "@/lib/email-templates";
 
 export async function POST(
   request: Request,
@@ -53,12 +57,40 @@ export async function POST(
       : undefined;
   const completed = body.completed === true;
 
-  const progress = await upsertLessonProgress({
+  const { progress, justCompleted } = await upsertLessonProgress({
     userId: user.id,
     lessonId,
     lastPositionSec,
     completed,
   });
+
+  if (justCompleted) {
+    try {
+      const allDone = await isCourseFullyCompleted(user.id, row.courseId);
+      if (allDone) {
+        const [course, site] = await Promise.all([
+          getCourseById(row.courseId),
+          loadSiteSettings(),
+        ]);
+        if (course) {
+          const tpl = completionEmail({
+            siteName: site.name,
+            userName: user.name,
+            courseTitle: course.title,
+            appUrl: appUrl(),
+          });
+          await sendEmail({
+            to: user.email,
+            subject: tpl.subject,
+            html: tpl.html,
+            text: tpl.text,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("[progress] completion email failed", err);
+    }
+  }
 
   return NextResponse.json({
     lastPositionSec: progress.lastPositionSec,

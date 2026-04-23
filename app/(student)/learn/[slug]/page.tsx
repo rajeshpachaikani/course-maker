@@ -1,10 +1,23 @@
+import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import type { Route } from "next";
 import { getCourseBySlug, getCourseTree } from "@/lib/courses";
 
 export const metadata = { title: "Course" };
 
-export default async function LearnLandingPage({
+export default function LearnLandingPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <LandingRedirect params={params} />
+    </Suspense>
+  );
+}
+
+async function LandingRedirect({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -13,9 +26,7 @@ export default async function LearnLandingPage({
   const course = await getCourseBySlug(slug);
   if (!course) notFound();
   const tree = await getCourseTree(course.id);
-  const firstLesson = tree?.modules
-    .flatMap((m) => m.lessons)
-    .find(Boolean);
+  const firstLesson = tree?.modules.flatMap((m) => m.lessons).find(Boolean);
   if (!firstLesson) {
     return (
       <main className="flex flex-col gap-4 py-6">

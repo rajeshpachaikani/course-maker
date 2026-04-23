@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -41,6 +42,9 @@ function fmtRel(date: Date): string {
 }
 
 export default async function AdminOverviewPage() {
+  // `connection()` opts this page into dynamic rendering so that
+  // Date.now() is evaluated at request time, not at build/prerender time.
+  await connection();
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
   const [

@@ -3,6 +3,9 @@ import { getCurrentUser } from "@/lib/dal";
 import { getStripeClient } from "@/lib/stripe";
 import { getCourseById } from "@/lib/courses";
 import { createEnrollment, isEnrolled } from "@/lib/enrollments";
+import { sendEmail } from "@/lib/mailer";
+import { loadSiteSettings } from "@/lib/theme";
+import { appUrl as resolveAppUrl, enrollmentEmail } from "@/lib/email-templates";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -37,6 +40,24 @@ export async function POST(request: Request) {
       amountPaidCents: 0,
       currency: course.currency,
     });
+    try {
+      const site = await loadSiteSettings();
+      const tpl = enrollmentEmail({
+        siteName: site.name,
+        userName: user.name,
+        courseTitle: course.title,
+        courseSlug: course.slug,
+        appUrl: resolveAppUrl(),
+      });
+      await sendEmail({
+        to: user.email,
+        subject: tpl.subject,
+        html: tpl.html,
+        text: tpl.text,
+      });
+    } catch (err) {
+      console.error("[checkout] free enrollment email failed", err);
+    }
     return NextResponse.json({ url: "/dashboard" });
   }
 

@@ -6,8 +6,9 @@ import { getCourseById } from "@/lib/courses";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { sendEmail } from "@/lib/resend";
+import { sendEmail } from "@/lib/mailer";
 import { loadSiteSettings } from "@/lib/theme";
+import { appUrl, enrollmentEmail } from "@/lib/email-templates";
 
 export async function POST(request: Request) {
   const cfg = await getStripeConfig();
@@ -63,16 +64,19 @@ export async function POST(request: Request) {
     const user = userRows[0];
     if (user) {
       const site = await loadSiteSettings();
-      const appUrl =
-        process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";
       try {
+        const tpl = enrollmentEmail({
+          siteName: site.name,
+          userName: user.name,
+          courseTitle: course.title,
+          courseSlug: course.slug,
+          appUrl: appUrl(),
+        });
         await sendEmail({
           to: user.email,
-          subject: `You're enrolled in ${course.title}`,
-          html: `<p>Hi ${escapeHtml(user.name)},</p>
-<p>Your purchase of <strong>${escapeHtml(course.title)}</strong> on ${escapeHtml(site.name)} is confirmed.</p>
-<p><a href="${appUrl}/dashboard">Start learning →</a></p>`,
-          text: `Hi ${user.name}, your purchase of ${course.title} is confirmed. Visit ${appUrl}/dashboard to start.`,
+          subject: tpl.subject,
+          html: tpl.html,
+          text: tpl.text,
         });
       } catch (err) {
         console.error("[stripe-webhook] email failed", err);
@@ -81,13 +85,4 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ received: true });
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }

@@ -1,5 +1,5 @@
 {
-  "id": "650a2b89-514f-48fd-bf39-8dba7665b79a",
+  "id": "5695abf9-7b54-471c-9b3d-dea19c1b7975",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -194,12 +194,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "sales_page_puck": {
-          "name": "sales_page_puck",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
         },
         "instructor_user_id": {
           "name": "instructor_user_id",
@@ -729,72 +723,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.pages": {
-      "name": "pages",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "puck_data": {
-          "name": "puck_data",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "published": {
-          "name": "published",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "pages_slug_unique": {
-          "name": "pages_slug_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.sessions": {
       "name": "sessions",
       "schema": "",
@@ -932,13 +860,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "raw_html_block_enabled": {
-          "name": "raw_html_block_enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "google_oauth_enabled": {
           "name": "google_oauth_enabled",
           "type": "boolean",
@@ -1056,6 +977,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'student'"
+        },
+        "trainer_grants": {
+          "name": "trainer_grants",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
         },
         "createdAt": {
           "name": "createdAt",
@@ -1235,8 +1163,12 @@
         "bunny_stream_cdn_hostname",
         "bunny_storage_zone",
         "bunny_storage_key",
-        "resend_api_key",
-        "resend_from_email",
+        "smtp_host",
+        "smtp_port",
+        "smtp_user",
+        "smtp_password",
+        "smtp_from_email",
+        "smtp_secure",
         "google_oauth_client_id",
         "google_oauth_client_secret"
       ]
@@ -1246,6 +1178,7 @@
       "schema": "public",
       "values": [
         "admin",
+        "trainer",
         "student"
       ]
     }

@@ -1,14 +1,12 @@
+import { requireAdmin } from "@/lib/dal";
 import { loadSiteSettings } from "@/lib/theme";
 import {
   CREDENTIAL_KEYS,
   listCredentialsMeta,
   type CredentialKey,
 } from "@/lib/credentials";
-import {
-  saveSiteSettingsAction,
-  saveCredentialAction,
-  deleteCredentialAction,
-} from "./actions";
+import { CredentialRow } from "./credential-row";
+import { SiteSettingsForm } from "./site-form";
 
 export const metadata = { title: "Settings" };
 
@@ -31,10 +29,17 @@ const CREDENTIAL_LABELS: Record<CredentialKey, { label: string; hint?: string }>
   },
   bunny_storage_zone: { label: "Bunny storage zone name" },
   bunny_storage_key: { label: "Bunny storage access key" },
-  resend_api_key: { label: "Resend API key", hint: "re_…" },
-  resend_from_email: {
-    label: "Resend from address",
-    hint: "no-reply@yourdomain.com",
+  smtp_host: { label: "SMTP host", hint: "smtp.email.eu-frankfurt-1.oci.oraclecloud.com" },
+  smtp_port: { label: "SMTP port", hint: "587 (STARTTLS) or 465 (SSL)" },
+  smtp_user: { label: "SMTP username", hint: "ocid1.user.oc1..… or approved sender" },
+  smtp_password: { label: "SMTP password", hint: "Generated SMTP credential password" },
+  smtp_from_email: {
+    label: "From address",
+    hint: "no-reply@yourdomain.com (must be approved sender)",
+  },
+  smtp_secure: {
+    label: "SMTP secure",
+    hint: "true for port 465 · false for 587/STARTTLS",
   },
   google_oauth_client_id: { label: "Google OAuth client ID" },
   google_oauth_client_secret: { label: "Google OAuth client secret" },
@@ -62,9 +67,16 @@ const CREDENTIAL_GROUPS: Array<{
     ],
   },
   {
-    title: "Resend",
-    subtitle: "Transactional email",
-    keys: ["resend_api_key", "resend_from_email"],
+    title: "SMTP",
+    subtitle: "Transactional email · Oracle Cloud / any SMTP relay",
+    keys: [
+      "smtp_host",
+      "smtp_port",
+      "smtp_user",
+      "smtp_password",
+      "smtp_from_email",
+      "smtp_secure",
+    ],
   },
   {
     title: "Google OAuth",
@@ -73,13 +85,31 @@ const CREDENTIAL_GROUPS: Array<{
   },
 ];
 
-export default async function AdminSettingsPage() {
-  const [site, credMeta] = await Promise.all([
+export default async function AdminSettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ k?: string; s?: string; m?: string }>;
+}) {
+  await requireAdmin();
+  const [site, credMeta, sp] = await Promise.all([
     loadSiteSettings(),
     listCredentialsMeta(),
+    searchParams,
   ]);
   const metaMap = new Map(credMeta.map((m) => [m.key, m]));
   const setCount = credMeta.filter((m) => m.isSet).length;
+
+  const statusKey = sp.k ?? null;
+  const statusOk = sp.s === "ok";
+  const statusMessage = sp.m ?? "";
+  const siteStatus =
+    statusKey === "site" && statusMessage
+      ? { ok: statusOk, message: statusMessage }
+      : null;
+  const credStatusFor = (key: string) =>
+    statusKey === key && statusMessage
+      ? { ok: statusOk, message: statusMessage }
+      : null;
 
   return (
     <>
@@ -118,90 +148,16 @@ export default async function AdminSettingsPage() {
           >
             Shown in browser tab, SEO metadata, and public layout.
           </p>
-          <form
-            action={saveSiteSettingsAction}
-            style={{ display: "flex", flexDirection: "column", gap: 0 }}
-          >
-            <div className="field-row">
-              <div className="field">
-                <label>SITE NAME</label>
-                <input
-                  type="text"
-                  name="name"
-                  defaultValue={site.name}
-                  required
-                />
-              </div>
-              <div className="field">
-                <label>TAGLINE</label>
-                <input
-                  type="text"
-                  name="tagline"
-                  defaultValue={site.tagline ?? ""}
-                  placeholder="Marketing, taught well."
-                />
-              </div>
-            </div>
-            <div className="field-row">
-              <div className="field">
-                <label>LOGO URL</label>
-                <input
-                  type="url"
-                  name="logoUrl"
-                  defaultValue={site.logoUrl ?? ""}
-                  placeholder="https://…/logo.svg"
-                />
-              </div>
-              <div className="field">
-                <label>FAVICON URL</label>
-                <input
-                  type="url"
-                  name="faviconUrl"
-                  defaultValue={site.faviconUrl ?? ""}
-                  placeholder="https://…/favicon.ico"
-                />
-              </div>
-            </div>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 10,
-                padding: "12px 0",
-                borderTop: "1px dotted var(--hair-2)",
-                marginBottom: 14,
-              }}
-            >
-              <input
-                type="checkbox"
-                name="googleOauthEnabled"
-                defaultChecked={site.googleOauthEnabled}
-                style={{ marginTop: 3 }}
-              />
-              <span>
-                <span
-                  style={{
-                    fontSize: 13.5,
-                    fontWeight: 600,
-                    color: "var(--ink)",
-                  }}
-                >
-                  Enable Google OAuth sign-in
-                </span>
-                <div
-                  className="mono-label"
-                  style={{ fontSize: 10, marginTop: 3 }}
-                >
-                  — REQUIRES GOOGLE OAUTH CREDENTIALS BELOW
-                </div>
-              </span>
-            </label>
-            <div>
-              <button type="submit" className="btn btn-primary">
-                Save site settings
-              </button>
-            </div>
-          </form>
+          <SiteSettingsForm
+            defaults={{
+              name: site.name,
+              tagline: site.tagline ?? "",
+              logoUrl: site.logoUrl ?? "",
+              faviconUrl: site.faviconUrl ?? "",
+              googleOauthEnabled: site.googleOauthEnabled,
+            }}
+            status={siteStatus}
+          />
         </section>
 
         <section>
@@ -236,6 +192,17 @@ export default async function AdminSettingsPage() {
                   — encrypted AES-256-GCM at rest
                 </span>
               </h2>
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: "var(--ink-3)",
+                  margin: "6px 0 0",
+                  maxWidth: 640,
+                }}
+              >
+                Click the ? next to any field for a step-by-step guide on where to
+                generate that key.
+              </p>
             </div>
           </div>
 
@@ -292,8 +259,11 @@ export default async function AdminSettingsPage() {
                         label={info.label}
                         hint={info.hint}
                         isSet={meta?.isSet ?? false}
-                        updatedAt={meta?.updatedAt ?? null}
+                        updatedAt={
+                          meta?.updatedAt ? meta.updatedAt.toISOString() : null
+                        }
                         isFirst={i === 0}
+                        status={credStatusFor(key)}
                       />
                     );
                   })}
@@ -311,105 +281,5 @@ export default async function AdminSettingsPage() {
         </section>
       </div>
     </>
-  );
-}
-
-function CredentialRow({
-  credKey,
-  label,
-  hint,
-  isSet,
-  updatedAt,
-  isFirst,
-}: {
-  credKey: CredentialKey;
-  label: string;
-  hint?: string;
-  isSet: boolean;
-  updatedAt: Date | null;
-  isFirst: boolean;
-}) {
-  return (
-    <div
-      style={{
-        borderTop: isFirst ? "none" : "1px dotted var(--hair-2)",
-        padding: "16px 0",
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-      >
-        <div>
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink)" }}>
-            {label}
-          </div>
-          {hint ? (
-            <div
-              className="mono-label"
-              style={{ fontSize: 10, marginTop: 3, textTransform: "none" }}
-            >
-              {hint}
-            </div>
-          ) : null}
-        </div>
-        <span
-          className={`status ${isSet ? "status-published" : "status-draft"}`}
-        >
-          {isSet
-            ? `Set${updatedAt ? ` · ${updatedAt.toLocaleDateString()}` : ""}`
-            : "Not set"}
-        </span>
-      </div>
-      <div style={{ display: "flex", gap: 8, alignItems: "stretch" }}>
-        <form
-          action={saveCredentialAction}
-          style={{ display: "flex", flex: 1, gap: 8 }}
-        >
-          <input type="hidden" name="key" value={credKey} />
-          <input
-            type="password"
-            name="value"
-            required
-            autoComplete="off"
-            placeholder={
-              isSet ? "•••••• enter new value to rotate" : "Enter value"
-            }
-            style={{
-              flex: 1,
-              padding: "10px 12px",
-              border: "1px solid var(--hair)",
-              borderRadius: "var(--radius-sm)",
-              background: "var(--paper-3)",
-              fontFamily: "var(--mono)",
-              fontSize: 13,
-              color: "var(--ink)",
-            }}
-          />
-          <button type="submit" className="btn btn-ink">
-            {isSet ? "Rotate" : "Save"}
-          </button>
-        </form>
-        {isSet ? (
-          <form action={deleteCredentialAction}>
-            <input type="hidden" name="key" value={credKey} />
-            <button
-              type="submit"
-              className="btn btn-ghost"
-              style={{ fontSize: 12 }}
-            >
-              Remove
-            </button>
-          </form>
-        ) : null}
-      </div>
-    </div>
   );
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentUserIsAdmin } from "@/lib/dal";
+import { currentUserIsStaff } from "@/lib/dal";
 import {
   getBunnyStreamConfig,
   createBunnyVideo,
@@ -7,7 +7,7 @@ import {
 } from "@/lib/bunny";
 
 export async function POST(request: Request) {
-  if (!(await currentUserIsAdmin())) {
+  if (!(await currentUserIsStaff())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -4,6 +4,8 @@ import { encryptedCredentials } from "@/lib/db/schema";
 import { encryptSecret, decryptSecret } from "@/lib/crypto";
 import { eq, inArray } from "drizzle-orm";
 
+export const CREDENTIALS_TAG = "credentials-meta";
+
 export const CREDENTIAL_KEYS = [
   "stripe_secret",
   "stripe_webhook_secret",
@@ -13,8 +15,12 @@ export const CREDENTIAL_KEYS = [
   "bunny_stream_cdn_hostname",
   "bunny_storage_zone",
   "bunny_storage_key",
-  "resend_api_key",
-  "resend_from_email",
+  "smtp_host",
+  "smtp_port",
+  "smtp_user",
+  "smtp_password",
+  "smtp_from_email",
+  "smtp_secure",
   "google_oauth_client_id",
   "google_oauth_client_secret",
 ] as const;

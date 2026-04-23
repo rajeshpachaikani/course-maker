@@ -1,5 +1,5 @@
-CREATE TYPE "public"."credential_key" AS ENUM('stripe_secret', 'stripe_webhook_secret', 'stripe_publishable', 'bunny_api_key', 'bunny_stream_library_id', 'bunny_stream_cdn_hostname', 'bunny_storage_zone', 'bunny_storage_key', 'resend_api_key', 'resend_from_email', 'google_oauth_client_id', 'google_oauth_client_secret');--> statement-breakpoint
-CREATE TYPE "public"."user_role" AS ENUM('admin', 'student');--> statement-breakpoint
+CREATE TYPE "public"."credential_key" AS ENUM('stripe_secret', 'stripe_webhook_secret', 'stripe_publishable', 'bunny_api_key', 'bunny_stream_library_id', 'bunny_stream_cdn_hostname', 'bunny_storage_zone', 'bunny_storage_key', 'smtp_host', 'smtp_port', 'smtp_user', 'smtp_password', 'smtp_from_email', 'smtp_secure', 'google_oauth_client_id', 'google_oauth_client_secret');--> statement-breakpoint
+CREATE TYPE "public"."user_role" AS ENUM('admin', 'trainer', 'student');--> statement-breakpoint
 CREATE TABLE "accounts" (
 	"id" text PRIMARY KEY NOT NULL,
 	"accountId" text NOT NULL,
@@ -27,7 +27,6 @@ CREATE TABLE "courses" (
 	"currency" text DEFAULT 'USD' NOT NULL,
 	"is_free" boolean DEFAULT false NOT NULL,
 	"published" boolean DEFAULT false NOT NULL,
-	"sales_page_puck" jsonb,
 	"instructor_user_id" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -82,17 +81,6 @@ CREATE TABLE "modules" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "pages" (
-	"id" text PRIMARY KEY NOT NULL,
-	"slug" text NOT NULL,
-	"title" text,
-	"puck_data" jsonb,
-	"published" boolean DEFAULT false NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "pages_slug_unique" UNIQUE("slug")
-);
---> statement-breakpoint
 CREATE TABLE "sessions" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expiresAt" timestamp with time zone NOT NULL,
@@ -111,7 +99,6 @@ CREATE TABLE "site_settings" (
 	"tagline" text,
 	"logo_url" text,
 	"favicon_url" text,
-	"raw_html_block_enabled" boolean DEFAULT false NOT NULL,
 	"google_oauth_enabled" boolean DEFAULT false NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -132,6 +119,7 @@ CREATE TABLE "users" (
 	"emailVerified" boolean DEFAULT false NOT NULL,
 	"image" text,
 	"role" "user_role" DEFAULT 'student' NOT NULL,
+	"trainer_grants" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,
 	"updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email")

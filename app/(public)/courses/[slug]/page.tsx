@@ -75,8 +75,7 @@ async function CourseDetailContent({
   const priceNumber = Math.round(course.priceCents / 100);
 
   return (
-    <div className="student-root">
-      <PublicTopbar active="courses" />
+    <>
       <div className="detail-root">
         <div className="detail-breadcrumb">
           <Link href="/courses">Courses</Link> {" / "}
@@ -280,7 +279,7 @@ async function CourseDetailContent({
           )}
         </section>
       </div>
-    </div>
+    </>
   );
 }
 

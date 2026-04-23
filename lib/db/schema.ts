@@ -15,7 +15,12 @@ import { relations } from "drizzle-orm";
 
 // ---------- Better Auth core tables (plural) ----------
 
-export const userRole = pgEnum("user_role", ["admin", "student"]);
+export const userRole = pgEnum("user_role", ["admin", "trainer", "student"]);
+
+export interface TrainerGrants {
+  publish?: boolean;
+  pricing?: boolean;
+}
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -24,6 +29,10 @@ export const users = pgTable("users", {
   emailVerified: boolean("emailVerified").notNull().default(false),
   image: text("image"),
   role: userRole("role").notNull().default("student"),
+  trainerGrants: jsonb("trainer_grants")
+    .$type<TrainerGrants>()
+    .notNull()
+    .default({}),
   createdAt: timestamp("createdAt", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -241,8 +250,12 @@ export const credentialKey = pgEnum("credential_key", [
   "bunny_stream_cdn_hostname",
   "bunny_storage_zone",
   "bunny_storage_key",
-  "resend_api_key",
-  "resend_from_email",
+  "smtp_host",
+  "smtp_port",
+  "smtp_user",
+  "smtp_password",
+  "smtp_from_email",
+  "smtp_secure",
   "google_oauth_client_id",
   "google_oauth_client_secret",
 ]);

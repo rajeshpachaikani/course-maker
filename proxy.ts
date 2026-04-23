@@ -5,6 +5,8 @@ const ADMIN_PREFIX = "/admin";
 const STUDENT_PREFIXES = ["/dashboard", "/learn"];
 const AUTH_PAGES = ["/login", "/signup"];
 
+const ADMIN_AREA_ROLES = new Set(["admin", "trainer"]);
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -22,15 +24,22 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (needsAdmin) {
+  if (needsAdmin && sessionCookie) {
     const cache = await getCookieCache(request, {
       secret: process.env.BETTER_AUTH_SECRET,
     });
-    const role = (cache?.user as { role?: string } | undefined)?.role;
-    if (role !== "admin") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
+    // Only redirect when we have a decoded cache AND role is unambiguously
+    // non-privileged. When cache is missing/expired, let the request through
+    // and rely on server-side `requireAdmin` / `requireAdminOrTrainer` to
+    // enforce with a DB lookup. This avoids the 307 loop after cookie-cache
+    // expiry on a still-valid session.
+    if (cache) {
+      const role = (cache.user as { role?: string } | undefined)?.role;
+      if (role && !ADMIN_AREA_ROLES.has(role)) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dashboard";
+        return NextResponse.redirect(url);
+      }
     }
   }
 

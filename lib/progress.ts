@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { lessonProgress, type LessonProgress } from "@/lib/db/schema";
 
@@ -44,7 +44,7 @@ export async function upsertLessonProgress(input: {
   lessonId: string;
   lastPositionSec?: number;
   completed?: boolean;
-}): Promise<LessonProgress> {
+}): Promise<{ progress: LessonProgress; justCompleted: boolean }> {
   const existing = await getLessonProgress(input.userId, input.lessonId);
   const now = new Date();
   if (!existing) {
@@ -58,7 +58,7 @@ export async function upsertLessonProgress(input: {
         updatedAt: now,
       })
       .returning();
-    return row;
+    return { progress: row, justCompleted: Boolean(input.completed) };
   }
   const values: Record<string, unknown> = { updatedAt: now };
   if (input.lastPositionSec !== undefined) {
@@ -67,7 +67,8 @@ export async function upsertLessonProgress(input: {
       input.lastPositionSec,
     );
   }
-  if (input.completed && !existing.completedAt) {
+  const willComplete = Boolean(input.completed) && !existing.completedAt;
+  if (willComplete) {
     values.completedAt = now;
   }
   const [row] = await db
@@ -80,5 +81,24 @@ export async function upsertLessonProgress(input: {
       ),
     )
     .returning();
-  return row;
+  return { progress: row, justCompleted: willComplete };
+}
+
+export async function isCourseFullyCompleted(
+  userId: string,
+  courseId: string,
+): Promise<boolean> {
+  const result = await db.execute<{ total: number; done: number }>(sql`
+    select
+      count(l.id)::int as total,
+      count(lp.completed_at)::int as done
+    from lessons l
+    inner join modules m on m.id = l.module_id
+    left join lesson_progress lp
+      on lp.lesson_id = l.id and lp.user_id = ${userId}
+    where m.course_id = ${courseId}
+  `);
+  const first = result.rows[0];
+  if (!first) return false;
+  return first.total > 0 && first.total === first.done;
 }
