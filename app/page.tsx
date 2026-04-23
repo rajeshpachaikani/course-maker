@@ -4,8 +4,6 @@ import { loadSiteSettings } from "@/lib/theme";
 import { listPublishedCourses } from "@/lib/courses";
 import { PublicTopbar } from "@/components/public-topbar";
 
-export const unstable_instant = { prefetch: "static" } as const;
-
 const THUMB_BG = [
   "bg-pink-grad",
   "bg-plum",

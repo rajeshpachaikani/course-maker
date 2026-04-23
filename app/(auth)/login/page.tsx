@@ -1,13 +1,22 @@
+import { Suspense } from "react";
 import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Sign in" };
 
-export default async function LoginPage({
+async function LoginFormWithNext({
   searchParams,
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
+  return <LoginForm next={next} />;
+}
+
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
   return (
     <div className="cf-auth-card flex flex-col gap-6 rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] p-8 shadow-sm">
       <div>
@@ -16,7 +25,9 @@ export default async function LoginPage({
           Sign in to continue.
         </p>
       </div>
-      <LoginForm next={next} />
+      <Suspense fallback={<LoginForm next={undefined} />}>
+        <LoginFormWithNext searchParams={searchParams} />
+      </Suspense>
     </div>
   );
 }
