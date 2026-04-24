@@ -39,6 +39,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - ./uploads:/app/public/uploads
     ports:
       - "127.0.0.1:${APP_HOST_PORT:-4210}:3000"
     healthcheck:

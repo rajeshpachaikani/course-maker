@@ -1,6 +1,7 @@
 "use server";
 
-import { appendFile } from "node:fs/promises";
+import { appendFile, mkdir, writeFile } from "node:fs/promises";
+import { join, extname } from "node:path";
 import { updateTag } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -14,6 +15,32 @@ import {
 } from "@/lib/credentials";
 
 const SETTINGS_PATH = "/admin/settings";
+
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "image/svg+xml",
+  "image/x-icon",
+  "image/vnd.microsoft.icon",
+]);
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const UPLOADS_DIR = join(process.cwd(), "public", "uploads");
+
+async function saveAsset(file: File, slot: "logo" | "favicon"): Promise<string> {
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    throw new Error(`Unsupported file type: ${file.type}`);
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error("File exceeds 5 MB limit");
+  }
+  await mkdir(UPLOADS_DIR, { recursive: true });
+  const ext = extname(file.name) || (file.type === "image/svg+xml" ? ".svg" : ".png");
+  const filename = `${slot}${ext}`;
+  await writeFile(join(UPLOADS_DIR, filename), Buffer.from(await file.arrayBuffer()));
+  return `/uploads/${filename}`;
+}
 
 async function logAction(line: string) {
   try {
@@ -67,11 +94,25 @@ export async function saveSiteSettingsAction(formData: FormData) {
   try {
     const name = asTrimmed(formData.get("name"));
     if (!name) redirectWithStatus("site", "err", "Site name is required");
+
+    let logoUrl = nullableText(formData.get("logoUrl"));
+    let faviconUrl = nullableText(formData.get("faviconUrl"));
+
+    const logoFile = formData.get("logoFile");
+    if (logoFile instanceof File && logoFile.size > 0) {
+      logoUrl = await saveAsset(logoFile, "logo");
+    }
+
+    const faviconFile = formData.get("faviconFile");
+    if (faviconFile instanceof File && faviconFile.size > 0) {
+      faviconUrl = await saveAsset(faviconFile, "favicon");
+    }
+
     await upsertSiteSettings({
       name,
       tagline: nullableText(formData.get("tagline")),
-      logoUrl: nullableText(formData.get("logoUrl")),
-      faviconUrl: nullableText(formData.get("faviconUrl")),
+      logoUrl,
+      faviconUrl,
       googleOauthEnabled: asBool(formData.get("googleOauthEnabled")),
     });
     updateTag(SITE_TAG);
