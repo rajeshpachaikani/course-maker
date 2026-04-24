@@ -13,6 +13,7 @@ import {
   setCredential,
   deleteCredential,
 } from "@/lib/credentials";
+import { sendEmail, getSmtpConfig } from "@/lib/mailer";
 
 const SETTINGS_PATH = "/admin/settings";
 
@@ -162,4 +163,31 @@ function isRedirectError(e: unknown): boolean {
   if (!(e instanceof Error)) return false;
   const digest = (e as { digest?: string }).digest;
   return typeof digest === "string" && digest.startsWith("NEXT_REDIRECT");
+}
+
+export async function testSmtpAction(
+  _prev: { ok: boolean; message: string } | null,
+  formData: FormData,
+): Promise<{ ok: boolean; message: string }> {
+  await requireAdmin();
+  const to = (formData.get("to") as string | null)?.trim() ?? "";
+  if (!to || !to.includes("@")) {
+    return { ok: false, message: "Valid recipient email required" };
+  }
+  try {
+    const cfg = await getSmtpConfig();
+    if (!cfg) {
+      return { ok: false, message: "SMTP not fully configured — set all five SMTP fields first" };
+    }
+    await sendEmail({
+      to,
+      subject: "CourseForge SMTP test",
+      html: "<p>Your CourseForge SMTP configuration is working correctly.</p>",
+      text: "Your CourseForge SMTP configuration is working correctly.",
+    });
+    return { ok: true, message: `Test email sent to ${to}` };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, message: msg };
+  }
 }

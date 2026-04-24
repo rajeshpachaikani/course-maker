@@ -8,6 +8,7 @@ import {
 } from "@/lib/credentials";
 import { CredentialRow } from "./credential-row";
 import { SiteSettingsForm } from "./site-form";
+import { SmtpTestPanel } from "./smtp-test-panel";
 
 export const metadata = { title: "Settings" };
 
@@ -270,6 +271,7 @@ export default async function AdminSettingsPage({
                     );
                   })}
                 </div>
+                {group.title === "SMTP" && <SmtpTestPanel />}
               </div>
             ))}
           </div>
