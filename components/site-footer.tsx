@@ -1,10 +1,10 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { loadSiteSettings } from "@/lib/theme";
+import { FooterYear } from "./footer-year";
 
 export async function SiteFooter() {
   const site = await loadSiteSettings();
-  const year = new Date().getFullYear();
   const company = site.companyName ?? site.name;
   return (
     <footer
@@ -51,7 +51,7 @@ export async function SiteFooter() {
         <Link href={"/refund" as Route}>Refund &amp; Cancellation</Link>
       </nav>
       <div className="mono-label" style={{ fontSize: 10.5 }}>
-        © {year} {company}
+        © <FooterYear /> {company}
       </div>
     </footer>
   );
