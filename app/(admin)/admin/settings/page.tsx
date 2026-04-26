@@ -158,6 +158,10 @@ export default async function AdminSettingsPage({
               logoUrl: site.logoUrl ?? "",
               faviconUrl: site.faviconUrl ?? "",
               googleOauthEnabled: site.googleOauthEnabled,
+              companyName: site.companyName ?? "",
+              companyAddress: site.companyAddress ?? "",
+              contactPhone: site.contactPhone ?? "",
+              supportEmail: site.supportEmail ?? "",
             }}
             status={siteStatus}
           />

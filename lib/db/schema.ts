@@ -236,6 +236,26 @@ export const siteSettings = pgTable("site_settings", {
   logoUrl: text("logo_url"),
   faviconUrl: text("favicon_url"),
   googleOauthEnabled: boolean("google_oauth_enabled").notNull().default(false),
+  companyName: text("company_name"),
+  companyAddress: text("company_address"),
+  contactPhone: text("contact_phone"),
+  supportEmail: text("support_email"),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const legalPageSlug = pgEnum("legal_page_slug", [
+  "privacy",
+  "terms",
+  "refund",
+  "contact",
+]);
+
+export const legalPages = pgTable("legal_pages", {
+  slug: legalPageSlug("slug").primaryKey(),
+  title: text("title").notNull(),
+  bodyTiptap: jsonb("body_tiptap"),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -346,3 +366,5 @@ export type Enrollment = typeof enrollments.$inferSelect;
 export type LessonProgress = typeof lessonProgress.$inferSelect;
 export type ThemeSettings = typeof themeSettings.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;
+export type LegalPage = typeof legalPages.$inferSelect;
+export type LegalPageSlug = (typeof legalPageSlug.enumValues)[number];

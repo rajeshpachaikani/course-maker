@@ -115,6 +115,10 @@ export async function saveSiteSettingsAction(formData: FormData) {
       logoUrl,
       faviconUrl,
       googleOauthEnabled: asBool(formData.get("googleOauthEnabled")),
+      companyName: nullableText(formData.get("companyName")),
+      companyAddress: nullableText(formData.get("companyAddress")),
+      contactPhone: nullableText(formData.get("contactPhone")),
+      supportEmail: nullableText(formData.get("supportEmail")),
     });
     updateTag(SITE_TAG);
   } catch (e) {

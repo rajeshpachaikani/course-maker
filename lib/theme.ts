@@ -60,6 +60,10 @@ const DEFAULT_SITE = {
   logoUrl: null as string | null,
   faviconUrl: null as string | null,
   googleOauthEnabled: false,
+  companyName: null as string | null,
+  companyAddress: null as string | null,
+  contactPhone: null as string | null,
+  supportEmail: null as string | null,
   updatedAt: new Date(0),
 };
 
@@ -110,6 +114,10 @@ type SiteSettingsPatch = {
   logoUrl?: string | null;
   faviconUrl?: string | null;
   googleOauthEnabled?: boolean;
+  companyName?: string | null;
+  companyAddress?: string | null;
+  contactPhone?: string | null;
+  supportEmail?: string | null;
 };
 
 export async function upsertSiteSettings(patch: SiteSettingsPatch) {
@@ -131,6 +139,10 @@ export async function upsertSiteSettings(patch: SiteSettingsPatch) {
       logoUrl: patch.logoUrl ?? null,
       faviconUrl: patch.faviconUrl ?? null,
       googleOauthEnabled: patch.googleOauthEnabled ?? false,
+      companyName: patch.companyName ?? null,
+      companyAddress: patch.companyAddress ?? null,
+      contactPhone: patch.contactPhone ?? null,
+      supportEmail: patch.supportEmail ?? null,
     });
   }
 }

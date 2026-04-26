@@ -68,6 +68,10 @@ export function SiteSettingsForm({
     logoUrl: string;
     faviconUrl: string;
     googleOauthEnabled: boolean;
+    companyName: string;
+    companyAddress: string;
+    contactPhone: string;
+    supportEmail: string;
   };
   status?: { ok: boolean; message: string } | null;
 }) {
@@ -105,6 +109,68 @@ export function SiteSettingsForm({
           currentUrl={defaults.faviconUrl}
           accept="image/png,image/svg+xml,image/x-icon,image/vnd.microsoft.icon"
         />
+      </div>
+      <div
+        style={{
+          borderTop: "1px dotted var(--hair-2)",
+          paddingTop: 14,
+          marginTop: 4,
+        }}
+      >
+        <div className="mono-label" style={{ marginBottom: 8 }}>
+          — Business contact (legal & payment-gateway compliance)
+        </div>
+        <div className="field-row">
+          <div className="field">
+            <label>REGISTERED COMPANY NAME</label>
+            <input
+              type="text"
+              name="companyName"
+              defaultValue={defaults.companyName}
+              placeholder="Acme Learning Pvt. Ltd."
+            />
+          </div>
+          <div className="field">
+            <label>SUPPORT EMAIL</label>
+            <input
+              type="email"
+              name="supportEmail"
+              defaultValue={defaults.supportEmail}
+              placeholder="support@yourdomain.com"
+            />
+          </div>
+        </div>
+        <div className="field-row">
+          <div className="field">
+            <label>DOMESTIC PHONE (INDIA)</label>
+            <input
+              type="tel"
+              name="contactPhone"
+              defaultValue={defaults.contactPhone}
+              placeholder="+91 80 1234 5678"
+            />
+          </div>
+        </div>
+        <div className="field">
+          <label>REGISTERED ADDRESS</label>
+          <textarea
+            name="companyAddress"
+            defaultValue={defaults.companyAddress}
+            rows={3}
+            placeholder="42, MG Road, Bengaluru, Karnataka 560001, India"
+            style={{
+              width: "100%",
+              fontFamily: "inherit",
+              fontSize: 13,
+              padding: "8px 10px",
+              border: "1px solid var(--hair)",
+              borderRadius: "var(--radius)",
+              background: "var(--paper)",
+              color: "var(--ink)",
+              resize: "vertical",
+            }}
+          />
+        </div>
       </div>
       <label
         style={{

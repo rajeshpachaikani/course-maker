@@ -12,6 +12,7 @@ type AdminRoute =
   | "/admin/courses"
   | "/admin/appearance"
   | "/admin/settings"
+  | "/admin/legal"
   | "/admin/users";
 
 const GROUPS: Array<{
@@ -20,7 +21,7 @@ const GROUPS: Array<{
   items: Array<{
     href: AdminRoute;
     label: string;
-    icon: "grid" | "book" | "palette" | "settings" | "users";
+    icon: "grid" | "book" | "palette" | "settings" | "users" | "scroll";
     badgeKey?: "courses";
     adminOnly?: boolean;
   }>;
@@ -54,6 +55,12 @@ const GROUPS: Array<{
         href: "/admin/settings",
         label: "Settings",
         icon: "settings",
+        adminOnly: true,
+      },
+      {
+        href: "/admin/legal",
+        label: "Legal pages",
+        icon: "scroll",
         adminOnly: true,
       },
     ],
