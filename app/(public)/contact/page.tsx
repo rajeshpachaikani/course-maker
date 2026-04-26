@@ -1,4 +1,3 @@
-import { connection } from "next/server";
 import { TiptapRender } from "@/components/tiptap-render";
 import { loadLegalPage } from "@/lib/legal";
 import { loadSiteSettings } from "@/lib/theme";
@@ -24,7 +23,6 @@ const LABEL_STYLE: React.CSSProperties = {
 };
 
 export default async function ContactPage() {
-  await connection();
   const [page, site] = await Promise.all([
     loadLegalPage("contact"),
     loadSiteSettings(),
