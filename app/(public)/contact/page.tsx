@@ -1,9 +1,15 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { PublicTopbar } from "@/components/public-topbar";
 import { TiptapRender } from "@/components/tiptap-render";
 import { loadLegalPage } from "@/lib/legal";
 import { loadSiteSettings } from "@/lib/theme";
-import { LegalShell } from "../legal-shell";
+import { LegalArticle, LegalSkeleton } from "../legal-shell";
 
 export const metadata = { title: "Contact Us" };
+
+const KICKER = "Support";
+const TITLE = "Contact Us";
 
 const ROW_STYLE: React.CSSProperties = {
   display: "grid",
@@ -22,7 +28,19 @@ const LABEL_STYLE: React.CSSProperties = {
   color: "var(--ink-3)",
 };
 
-export default async function ContactPage() {
+export default function ContactPage() {
+  return (
+    <div className="student-root">
+      <PublicTopbar />
+      <Suspense fallback={<LegalSkeleton kicker={KICKER} title={TITLE} />}>
+        <ContactBody />
+      </Suspense>
+    </div>
+  );
+}
+
+async function ContactBody() {
+  await connection();
   const [page, site] = await Promise.all([
     loadLegalPage("contact"),
     loadSiteSettings(),
@@ -36,7 +54,7 @@ export default async function ContactPage() {
     !!site.supportEmail;
 
   return (
-    <LegalShell title={page.title} kicker="Support" updatedAt={page.updatedAt}>
+    <LegalArticle title={page.title} kicker={KICKER} updatedAt={page.updatedAt}>
       {hasDetails ? (
         <section
           style={{
@@ -100,6 +118,6 @@ export default async function ContactPage() {
         </p>
       )}
       <TiptapRender doc={page.bodyTiptap as never} />
-    </LegalShell>
+    </LegalArticle>
   );
 }
