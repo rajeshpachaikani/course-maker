@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { loadSiteSettings } from "@/lib/theme";
 import { listPublishedCourses } from "@/lib/courses";
 import { PublicTopbar } from "@/components/public-topbar";
+import { SiteFooter } from "@/components/site-footer";
 
 const THUMB_BG = [
   "bg-pink-grad",
@@ -26,6 +27,7 @@ export default function HomePage() {
       <Suspense fallback={<HomeSkeleton />}>
         <HomeContent />
       </Suspense>
+      <SiteFooter />
     </div>
   );
 }
