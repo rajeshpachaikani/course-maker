@@ -92,9 +92,9 @@ export default async function AdminLegalIndexPage() {
                     className="mono-label"
                     style={{ fontSize: 10 }}
                   >
-                    {p.isCustom
-                      ? `Edited · ${p.updatedAt?.toLocaleDateString() ?? ""}`
-                      : "Default placeholder"}
+                    {p.updatedAt
+                      ? `Edited · ${p.updatedAt.toLocaleDateString()}`
+                      : "Default content"}
                   </span>
                   <div style={{ display: "flex", gap: 6 }}>
                     <Link
