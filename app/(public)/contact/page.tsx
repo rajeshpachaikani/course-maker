@@ -5,6 +5,7 @@ import { TiptapRender } from "@/components/tiptap-render";
 import { loadLegalPage } from "@/lib/legal";
 import { loadSiteSettings } from "@/lib/theme";
 import { LegalArticle, LegalSkeleton } from "../legal-shell";
+import { ContactForm } from "./contact-form";
 
 export const metadata = { title: "Contact Us" };
 
@@ -118,6 +119,7 @@ async function ContactBody() {
         </p>
       )}
       <TiptapRender doc={page.bodyTiptap as never} />
+      <ContactForm />
     </LegalArticle>
   );
 }

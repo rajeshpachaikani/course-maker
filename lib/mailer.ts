@@ -65,6 +65,7 @@ export async function sendEmail(input: {
   subject: string;
   html: string;
   text?: string;
+  replyTo?: string;
 }): Promise<void> {
   const cfg = await getSmtpConfig();
   if (!cfg) {
@@ -79,6 +80,7 @@ export async function sendEmail(input: {
       subject: input.subject,
       html: input.html,
       text: input.text,
+      replyTo: input.replyTo,
     });
   } finally {
     transporter.close();
