@@ -7,6 +7,7 @@ import { listUserEnrollments } from "@/lib/enrollments";
 import { getCourseTree } from "@/lib/courses";
 import { listUserProgressForLessons } from "@/lib/progress";
 import { PublicTopbar } from "@/components/public-topbar";
+import { ProfileButton } from "./profile-sidebar";
 
 export const metadata = { title: "Dashboard" };
 
@@ -88,11 +89,26 @@ async function DashboardContent() {
     }),
   );
 
+  const profileUser = {
+    id: session.user.id,
+    name: userName === "there" ? "" : userName,
+    image: (session.user as { image?: string | null }).image ?? null,
+  };
+
   return (
     <>
       <header style={{ marginBottom: 40 }}>
-        <div className="mono-label" style={{ marginBottom: 8 }}>
-          — Your workspace
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 16,
+            marginBottom: 8,
+          }}
+        >
+          <div className="mono-label">— Your workspace</div>
+          <ProfileButton user={profileUser} />
         </div>
         <h1
           style={{
