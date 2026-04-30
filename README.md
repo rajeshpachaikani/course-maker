@@ -1,4 +1,4 @@
-# CourseForge
+# CourseMaker
 
 A self-hostable, white-label course selling platform. Each client gets
 their own Docker-deployed instance, their own Stripe / Bunny Stream /
@@ -87,8 +87,8 @@ The app only needs the following infrastructure-level secrets:
 | `BETTER_AUTH_SECRET`  | yes      | 32-byte random, base64                             |
 | `ENCRYPTION_KEY`      | yes      | 32-byte random, base64 — **losing this is fatal**  |
 | `POSTGRES_PASSWORD`   | yes      | Prod compose only                                  |
-| `POSTGRES_USER`       | no       | Defaults to `courseforge`                          |
-| `POSTGRES_DB`         | no       | Defaults to `courseforge`                          |
+| `POSTGRES_USER`       | no       | Defaults to `coursemaker`                          |
+| `POSTGRES_DB`         | no       | Defaults to `coursemaker`                          |
 | `NGINX_HTTP_PORT`     | no       | Host port for the reverse proxy, defaults to `80`  |
 
 All tenant credentials (Stripe / Bunny / Resend / Google) live in the
@@ -114,7 +114,7 @@ database, encrypted with `ENCRYPTION_KEY`.
 - **Payments** are Stripe Checkout Sessions; the
   `checkout.session.completed` webhook creates the enrollment
   (idempotent via `webhook_events`).
-- **Theming** is driven by `--cf-*` CSS custom properties written from
+- **Theming** is driven by `--cm-*` CSS custom properties written from
   `theme_settings`; everything in the storefront uses them, so
   per-tenant branding requires no code changes.
 - **Sales pages** are Puck trees stored as JSONB; rendered via

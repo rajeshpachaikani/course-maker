@@ -1,5 +1,5 @@
 {
-  "id": "5695abf9-7b54-471c-9b3d-dea19c1b7975",
+  "id": "8b132915-aa64-421c-9ace-e37f0e2ae98a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -429,6 +429,45 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.legal_pages": {
+      "name": "legal_pages",
+      "schema": "",
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "legal_page_slug",
+          "typeSchema": "public",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body_tiptap": {
+          "name": "body_tiptap",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.lesson_progress": {
       "name": "lesson_progress",
       "schema": "",
@@ -840,7 +879,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'CourseForge'"
+          "default": "'CourseMaker'"
         },
         "tagline": {
           "name": "tagline",
@@ -866,6 +905,30 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "company_address": {
+          "name": "company_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contact_phone": {
+          "name": "contact_phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "support_email": {
+          "name": "support_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "updated_at": {
           "name": "updated_at",
@@ -1171,6 +1234,16 @@
         "smtp_secure",
         "google_oauth_client_id",
         "google_oauth_client_secret"
+      ]
+    },
+    "public.legal_page_slug": {
+      "name": "legal_page_slug",
+      "schema": "public",
+      "values": [
+        "privacy",
+        "terms",
+        "refund",
+        "contact"
       ]
     },
     "public.user_role": {

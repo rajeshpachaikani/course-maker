@@ -55,7 +55,7 @@ const DEFAULT_THEME: ResolvedTheme = {
 
 const DEFAULT_SITE = {
   id: "singleton" as const,
-  name: "CourseForge",
+  name: "CourseMaker",
   tagline: null as string | null,
   logoUrl: null as string | null,
   faviconUrl: null as string | null,
@@ -134,7 +134,7 @@ export async function upsertSiteSettings(patch: SiteSettingsPatch) {
   } else {
     await db.insert(siteSettings).values({
       id: "singleton",
-      name: patch.name ?? "CourseForge",
+      name: patch.name ?? "CourseMaker",
       tagline: patch.tagline ?? null,
       logoUrl: patch.logoUrl ?? null,
       faviconUrl: patch.faviconUrl ?? null,
@@ -205,18 +205,18 @@ export function themeToCssVars(theme: ResolvedTheme): string {
   const c = theme.colors;
   const f = theme.fonts;
   return `:root {
-  --cf-bg: ${c.bg};
-  --cf-fg: ${c.fg};
-  --cf-surface: ${c.surface};
-  --cf-muted-fg: ${c.mutedFg};
-  --cf-border: ${c.border};
-  --cf-primary: ${c.primary};
-  --cf-primary-fg: ${c.primaryFg};
-  --cf-accent: ${c.accent};
-  --cf-accent-fg: ${c.accentFg};
-  --cf-radius: ${theme.borderRadius};
-  --cf-font-sans: ${f.sans};
-  --cf-font-heading: ${f.heading ?? f.sans};
-  --cf-font-mono: ${f.mono ?? "ui-monospace, monospace"};
+  --cm-bg: ${c.bg};
+  --cm-fg: ${c.fg};
+  --cm-surface: ${c.surface};
+  --cm-muted-fg: ${c.mutedFg};
+  --cm-border: ${c.border};
+  --cm-primary: ${c.primary};
+  --cm-primary-fg: ${c.primaryFg};
+  --cm-accent: ${c.accent};
+  --cm-accent-fg: ${c.accentFg};
+  --cm-radius: ${theme.borderRadius};
+  --cm-font-sans: ${f.sans};
+  --cm-font-heading: ${f.heading ?? f.sans};
+  --cm-font-mono: ${f.mono ?? "ui-monospace, monospace"};
 }`;
 }

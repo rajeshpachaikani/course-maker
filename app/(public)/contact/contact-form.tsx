@@ -63,9 +63,9 @@ export function ContactForm() {
           <div style={{ display: "grid", gap: 16 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div className="field">
-                <label htmlFor="cf-name">NAME</label>
+                <label htmlFor="cm-name">NAME</label>
                 <input
-                  id="cf-name"
+                  id="cm-name"
                   name="name"
                   type="text"
                   required
@@ -75,9 +75,9 @@ export function ContactForm() {
                 />
               </div>
               <div className="field">
-                <label htmlFor="cf-email">EMAIL</label>
+                <label htmlFor="cm-email">EMAIL</label>
                 <input
-                  id="cf-email"
+                  id="cm-email"
                   name="email"
                   type="email"
                   required
@@ -89,9 +89,9 @@ export function ContactForm() {
             </div>
 
             <div className="field">
-              <label htmlFor="cf-subject">SUBJECT</label>
+              <label htmlFor="cm-subject">SUBJECT</label>
               <input
-                id="cf-subject"
+                id="cm-subject"
                 name="subject"
                 type="text"
                 placeholder="What is this about? (optional)"
@@ -100,9 +100,9 @@ export function ContactForm() {
             </div>
 
             <div className="field">
-              <label htmlFor="cf-message">MESSAGE</label>
+              <label htmlFor="cm-message">MESSAGE</label>
               <textarea
-                id="cf-message"
+                id="cm-message"
                 name="message"
                 required
                 placeholder="Write your message here…"

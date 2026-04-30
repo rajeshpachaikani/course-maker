@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1776869253460,
-      "tag": "0000_harsh_cobalt_man",
+      "when": 1777547659006,
+      "tag": "0000_init",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1777196166223,
-      "tag": "0001_sleepy_captain_britain",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1777268512473,
-      "tag": "0002_seed_legal_defaults",
+      "when": 1777547671282,
+      "tag": "0001_seed_legal_defaults",
       "breakpoints": true
     }
   ]

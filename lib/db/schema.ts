@@ -109,7 +109,7 @@ export const verifications = pgTable(
   (t) => [index("verifications_identifier_idx").on(t.identifier)],
 );
 
-// ---------- CourseForge domain ----------
+// ---------- CourseMaker domain ----------
 
 export const courses = pgTable(
   "courses",
@@ -231,7 +231,7 @@ export const themeSettings = pgTable("theme_settings", {
 
 export const siteSettings = pgTable("site_settings", {
   id: text("id").primaryKey().default("singleton"),
-  name: text("name").notNull().default("CourseForge"),
+  name: text("name").notNull().default("CourseMaker"),
   tagline: text("tagline"),
   logoUrl: text("logo_url"),
   faviconUrl: text("favicon_url"),

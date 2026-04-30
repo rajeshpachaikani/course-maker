@@ -1,8 +1,8 @@
-# CourseForge
+# CourseMaker
 
 ## What and Why
 
-A self-hostable, white-label course selling platform. The business rationale: every existing open-source LMS is either enterprise bloat (Moodle, Open edX) or a rigid one-off deployment. CourseForge is designed to be a repeatable product — each client gets their own Docker-deployed instance, their own Stripe account, their own Bunny Stream library. No SaaS lock-in, no platform transaction fees. Unartech deploys it, hands over the admin URL, client configures everything through the UI.
+A self-hostable, white-label course selling platform. The business rationale: every existing open-source LMS is either enterprise bloat (Moodle, Open edX) or a rigid one-off deployment. CourseMaker is designed to be a repeatable product — each client gets their own Docker-deployed instance, their own Stripe account, their own Bunny Stream library. No SaaS lock-in, no platform transaction fees. Unartech deploys it, hands over the admin URL, client configures everything through the UI.
 
 The platform has two users: a **creator/admin** who uploads courses and customises the storefront, and a **student** who buys and watches.
 
@@ -16,7 +16,7 @@ The platform has two users: a **creator/admin** who uploads courses and customis
 
 **The storefront is editable.** Sales pages (homepage, per-course landing pages) are built with Puck (`@measured/puck`) — an open source drag-and-drop page builder for Next.js. Puck data is stored as JSONB. This is what makes it a product rather than a template.
 
-**Theming via CSS custom properties.** The admin sets colours, fonts (curated Google Fonts list), border radius, and can write raw custom CSS. All storefront components use `var(--cf-*)` variables and carry `cf-` class names for targeting. No hardcoded values anywhere in public-facing UI.
+**Theming via CSS custom properties.** The admin sets colours, fonts (curated Google Fonts list), border radius, and can write raw custom CSS. All storefront components use `var(--cm-*)` variables and carry `cm-` class names for targeting. No hardcoded values anywhere in public-facing UI.
 
 **Rich text via TipTap v2** for course and lesson descriptions.
 

@@ -45,12 +45,12 @@ export function TiptapEditor({
 
   if (!editor) {
     return (
-      <div className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)] min-h-[200px]" />
+      <div className="rounded-[var(--cm-radius)] border border-[var(--cm-border)] bg-[var(--cm-surface)] min-h-[200px]" />
     );
   }
 
   return (
-    <div className="rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-surface)]">
+    <div className="rounded-[var(--cm-radius)] border border-[var(--cm-border)] bg-[var(--cm-surface)]">
       <Toolbar editor={editor} />
       <EditorContent editor={editor} />
     </div>
@@ -61,11 +61,11 @@ function Toolbar({ editor }: { editor: Editor }) {
   const btn = (active: boolean) =>
     `px-2 py-1 text-xs rounded border ${
       active
-        ? "bg-[var(--cf-primary)] text-[var(--cf-primary-fg)] border-[var(--cf-primary)]"
-        : "border-[var(--cf-border)] text-[var(--cf-fg)] hover:bg-[var(--cf-bg)]"
+        ? "bg-[var(--cm-primary)] text-[var(--cm-primary-fg)] border-[var(--cm-primary)]"
+        : "border-[var(--cm-border)] text-[var(--cm-fg)] hover:bg-[var(--cm-bg)]"
     }`;
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-[var(--cf-border)] p-2">
+    <div className="flex flex-wrap items-center gap-1 border-b border-[var(--cm-border)] p-2">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -87,7 +87,7 @@ function Toolbar({ editor }: { editor: Editor }) {
       >
         Strike
       </button>
-      <span className="mx-1 h-4 w-px bg-[var(--cf-border)]" />
+      <span className="mx-1 h-4 w-px bg-[var(--cm-border)]" />
       <button
         type="button"
         onClick={() =>
@@ -115,7 +115,7 @@ function Toolbar({ editor }: { editor: Editor }) {
       >
         H3
       </button>
-      <span className="mx-1 h-4 w-px bg-[var(--cf-border)]" />
+      <span className="mx-1 h-4 w-px bg-[var(--cm-border)]" />
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -144,7 +144,7 @@ function Toolbar({ editor }: { editor: Editor }) {
       >
         Code
       </button>
-      <span className="mx-1 h-4 w-px bg-[var(--cf-border)]" />
+      <span className="mx-1 h-4 w-px bg-[var(--cm-border)]" />
       <button
         type="button"
         onClick={() => {

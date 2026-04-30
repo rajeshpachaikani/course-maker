@@ -36,7 +36,7 @@ export function SignupForm() {
           required
           minLength={2}
           autoComplete="name"
-          className="cf-input rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-[var(--cf-fg)] outline-none focus:border-[var(--cf-primary)]"
+          className="cm-input rounded-[var(--cm-radius)] border border-[var(--cm-border)] bg-[var(--cm-bg)] px-3 py-2 text-[var(--cm-fg)] outline-none focus:border-[var(--cm-primary)]"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
@@ -46,7 +46,7 @@ export function SignupForm() {
           name="email"
           required
           autoComplete="email"
-          className="cf-input rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-[var(--cf-fg)] outline-none focus:border-[var(--cf-primary)]"
+          className="cm-input rounded-[var(--cm-radius)] border border-[var(--cm-border)] bg-[var(--cm-bg)] px-3 py-2 text-[var(--cm-fg)] outline-none focus:border-[var(--cm-primary)]"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
@@ -57,7 +57,7 @@ export function SignupForm() {
           required
           minLength={8}
           autoComplete="new-password"
-          className="cf-input rounded-[var(--cf-radius)] border border-[var(--cf-border)] bg-[var(--cf-bg)] px-3 py-2 text-[var(--cf-fg)] outline-none focus:border-[var(--cf-primary)]"
+          className="cm-input rounded-[var(--cm-radius)] border border-[var(--cm-border)] bg-[var(--cm-bg)] px-3 py-2 text-[var(--cm-fg)] outline-none focus:border-[var(--cm-primary)]"
         />
       </label>
       {error && (
@@ -68,11 +68,11 @@ export function SignupForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="cf-btn cf-btn-primary rounded-[var(--cf-radius)] bg-[var(--cf-primary)] px-4 py-2 text-sm font-medium text-[var(--cf-primary-fg)] disabled:opacity-50"
+        className="cm-btn cm-btn-primary rounded-[var(--cm-radius)] bg-[var(--cm-primary)] px-4 py-2 text-sm font-medium text-[var(--cm-primary-fg)] disabled:opacity-50"
       >
         {isPending ? "Creating…" : "Create account"}
       </button>
-      <p className="text-sm text-[var(--cf-muted-fg)]">
+      <p className="text-sm text-[var(--cm-muted-fg)]">
         Have an account?{" "}
         <Link href="/login" className="underline">
           Sign in

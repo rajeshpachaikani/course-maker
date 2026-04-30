@@ -185,9 +185,9 @@ export async function testSmtpAction(
     }
     await sendEmail({
       to,
-      subject: "CourseForge SMTP test",
-      html: "<p>Your CourseForge SMTP configuration is working correctly.</p>",
-      text: "Your CourseForge SMTP configuration is working correctly.",
+      subject: "CourseMaker SMTP test",
+      html: "<p>Your CourseMaker SMTP configuration is working correctly.</p>",
+      text: "Your CourseMaker SMTP configuration is working correctly.",
     });
     return { ok: true, message: `Test email sent to ${to}` };
   } catch (e) {

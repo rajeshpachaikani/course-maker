@@ -1,4 +1,5 @@
 CREATE TYPE "public"."credential_key" AS ENUM('stripe_secret', 'stripe_webhook_secret', 'stripe_publishable', 'bunny_api_key', 'bunny_stream_library_id', 'bunny_stream_cdn_hostname', 'bunny_storage_zone', 'bunny_storage_key', 'smtp_host', 'smtp_port', 'smtp_user', 'smtp_password', 'smtp_from_email', 'smtp_secure', 'google_oauth_client_id', 'google_oauth_client_secret');--> statement-breakpoint
+CREATE TYPE "public"."legal_page_slug" AS ENUM('privacy', 'terms', 'refund', 'contact');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'trainer', 'student');--> statement-breakpoint
 CREATE TABLE "accounts" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -51,6 +52,13 @@ CREATE TABLE "enrollments" (
 	"enrolled_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "legal_pages" (
+	"slug" "legal_page_slug" PRIMARY KEY NOT NULL,
+	"title" text NOT NULL,
+	"body_tiptap" jsonb,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "lesson_progress" (
 	"user_id" text NOT NULL,
 	"lesson_id" text NOT NULL,
@@ -95,11 +103,15 @@ CREATE TABLE "sessions" (
 --> statement-breakpoint
 CREATE TABLE "site_settings" (
 	"id" text PRIMARY KEY DEFAULT 'singleton' NOT NULL,
-	"name" text DEFAULT 'CourseForge' NOT NULL,
+	"name" text DEFAULT 'CourseMaker' NOT NULL,
 	"tagline" text,
 	"logo_url" text,
 	"favicon_url" text,
 	"google_oauth_enabled" boolean DEFAULT false NOT NULL,
+	"company_name" text,
+	"company_address" text,
+	"contact_phone" text,
+	"support_email" text,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint

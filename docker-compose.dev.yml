@@ -1,23 +1,23 @@
-name: courseforge-dev
+name: coursemaker-dev
 
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: courseforge-postgres-dev
+    container_name: coursemaker-postgres-dev
     restart: unless-stopped
     environment:
-      POSTGRES_USER: courseforge
-      POSTGRES_PASSWORD: courseforge
-      POSTGRES_DB: courseforge
+      POSTGRES_USER: coursemaker
+      POSTGRES_PASSWORD: coursemaker
+      POSTGRES_DB: coursemaker
     ports:
       - "5455:5432"
     volumes:
-      - courseforge_pgdata:/var/lib/postgresql/data
+      - coursemaker_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U courseforge -d courseforge"]
+      test: ["CMD-SHELL", "pg_isready -U coursemaker -d coursemaker"]
       interval: 3s
       timeout: 3s
       retries: 20
 
 volumes:
-  courseforge_pgdata:
+  coursemaker_pgdata:

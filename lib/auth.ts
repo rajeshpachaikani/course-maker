@@ -10,7 +10,7 @@ import { appUrl, registrationEmail } from "@/lib/email-templates";
 import { loadSiteSettings } from "@/lib/theme";
 
 export const auth = betterAuth({
-  appName: "CourseForge",
+  appName: "CourseMaker",
   baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {

@@ -136,7 +136,7 @@ export const CREDENTIAL_GUIDES: Partial<Record<CredentialKey, CredentialGuide>> 
       steps: [
         "OCI Console → Identity & Security → Users → pick (or create) the user that will send mail.",
         "Resources panel → SMTP Credentials → Generate SMTP Credentials.",
-        "Give it a description (e.g. CourseForge prod) → Generate.",
+        "Give it a description (e.g. CourseMaker prod) → Generate.",
         "Copy the Username shown (looks like ocid1.user.oc1..….@ocid.….com) and paste here.",
       ],
       warning:
@@ -196,7 +196,7 @@ export const CREDENTIAL_GUIDES: Partial<Record<CredentialKey, CredentialGuide>> 
       dashboardUrl: "https://console.cloud.google.com/apis/credentials",
       docUrl: "https://developers.google.com/identity/protocols/oauth2",
       steps: [
-        "Open the OAuth client you created for CourseForge in Google Cloud Console → Credentials.",
+        "Open the OAuth client you created for CourseMaker in Google Cloud Console → Credentials.",
         "Click the client name to open its detail page.",
         "Under Additional information (or the Client secrets section), copy Client secret.",
         "Paste it here.",
