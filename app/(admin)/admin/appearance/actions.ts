@@ -16,15 +16,19 @@ const COLOR_KEYS: Array<keyof ThemeColors> = [
   "accentFg",
 ];
 
-const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+const COLOR_RE =
+  /^(#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\([^()]*\)|[a-zA-Z]+)$/;
 
-function readHex(formData: FormData, name: string): string | null {
+function readColor(formData: FormData, name: string): string | null {
   const v = formData.get(name);
   if (typeof v !== "string") return null;
   const t = v.trim();
   if (!t) return null;
-  if (!HEX_RE.test(t)) {
-    throw new Error(`Invalid hex color for ${name}`);
+  if (t.length > 200 || /[\r\n;{}]/.test(t)) {
+    throw new Error(`Invalid color for ${name}`);
+  }
+  if (!COLOR_RE.test(t)) {
+    throw new Error(`Invalid color for ${name}`);
   }
   return t;
 }
@@ -41,7 +45,7 @@ export async function saveThemeAction(formData: FormData) {
 
   const colors: Partial<ThemeColors> = {};
   for (const key of COLOR_KEYS) {
-    const v = readHex(formData, `colors.${key}`);
+    const v = readColor(formData, `colors.${key}`);
     if (v) colors[key] = v;
   }
 
