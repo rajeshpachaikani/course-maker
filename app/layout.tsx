@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { cacheTag } from "next/cache";
 import "./globals.css";
-import { loadTheme, loadSiteSettings, themeToCssVars } from "@/lib/theme";
+import {
+  loadTheme,
+  loadSiteSettings,
+  themeToCssVars,
+  THEME_TAG,
+} from "@/lib/theme";
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await loadSiteSettings();
@@ -17,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function ThemeStyle() {
   "use cache";
+  cacheTag(THEME_TAG);
   const theme = await loadTheme();
   const css = themeToCssVars(theme);
   return (

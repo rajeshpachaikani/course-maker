@@ -204,7 +204,23 @@ export { loadThemeUncached };
 export function themeToCssVars(theme: ResolvedTheme): string {
   const c = theme.colors;
   const f = theme.fonts;
+  const heading = f.heading ?? f.sans;
+  const mono = f.mono ?? "ui-monospace, monospace";
   return `:root {
+  --paper: ${c.bg};
+  --paper-2: ${c.surface};
+  --ink: ${c.fg};
+  --ink-3: ${c.mutedFg};
+  --hair: ${c.border};
+  --pink: ${c.primary};
+  --magenta: ${c.accent};
+  --terracotta: ${c.primary};
+  --terracotta-deep: ${c.accent};
+  --brand-grad: linear-gradient(90deg, ${c.primary} 0%, ${c.accent} 100%);
+  --sans: ${f.sans};
+  --serif: ${heading};
+  --mono: ${mono};
+  --radius: ${theme.borderRadius};
   --cm-bg: ${c.bg};
   --cm-fg: ${c.fg};
   --cm-surface: ${c.surface};
@@ -216,7 +232,7 @@ export function themeToCssVars(theme: ResolvedTheme): string {
   --cm-accent-fg: ${c.accentFg};
   --cm-radius: ${theme.borderRadius};
   --cm-font-sans: ${f.sans};
-  --cm-font-heading: ${f.heading ?? f.sans};
-  --cm-font-mono: ${f.mono ?? "ui-monospace, monospace"};
+  --cm-font-heading: ${heading};
+  --cm-font-mono: ${mono};
 }`;
 }
