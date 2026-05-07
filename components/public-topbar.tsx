@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { loadSiteSettings } from "@/lib/theme";
 import { TopbarAuth, TopbarAuthSkeleton } from "./topbar-auth";
+import { ThemeToggle } from "./theme-toggle";
 
 export async function PublicTopbar({
   active,
@@ -39,9 +40,12 @@ export async function PublicTopbar({
           </Link>
         </nav>
       </div>
-      <Suspense fallback={<TopbarAuthSkeleton />}>
-        <TopbarAuth />
-      </Suspense>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <ThemeToggle />
+        <Suspense fallback={<TopbarAuthSkeleton />}>
+          <TopbarAuth />
+        </Suspense>
+      </div>
     </header>
   );
 }

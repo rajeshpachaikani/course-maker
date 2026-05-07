@@ -17,8 +17,15 @@ interface ThemeColors {
   accentFg: string;
 }
 
+type Mode = "light" | "dark";
+
+interface ThemePalettes {
+  light: ThemeColors;
+  dark: ThemeColors;
+}
+
 interface ResolvedTheme {
-  colors: ThemeColors;
+  colors: ThemePalettes;
   fonts: { sans: string; heading?: string; mono?: string };
   borderRadius: string;
   customCss: string | null;
@@ -123,7 +130,8 @@ function parseRadiusRem(v: string): number {
 }
 
 export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
-  const [colors, setColors] = useState<ThemeColors>(initial.colors);
+  const [palettes, setPalettes] = useState<ThemePalettes>(initial.colors);
+  const [activeMode, setActiveMode] = useState<Mode>("dark");
   const [sans, setSans] = useState(initial.fonts.sans);
   const [heading, setHeading] = useState(
     initial.fonts.heading ?? initial.fonts.sans,
@@ -136,11 +144,18 @@ export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
   const [pending, start] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
 
+  const colors = palettes[activeMode];
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     fd.set("customCss", customCss);
     fd.set("borderRadius", `${radius}rem`);
+    for (const m of ["light", "dark"] as const) {
+      for (const k of Object.keys(palettes[m]) as Array<keyof ThemeColors>) {
+        fd.set(`colors.${m}.${k}`, palettes[m][k]);
+      }
+    }
     start(async () => {
       setMessage(null);
       try {
@@ -153,11 +168,21 @@ export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
   }
 
   function setColor(key: keyof ThemeColors, value: string) {
-    setColors((c) => ({ ...c, [key]: value }));
+    setPalettes((p) => ({
+      ...p,
+      [activeMode]: { ...p[activeMode], [key]: value },
+    }));
   }
 
   function applyAccentPreset(preset: (typeof ACCENT_PRESETS)[number]) {
-    setColors((c) => ({ ...c, primary: preset.primary, accent: preset.accent }));
+    setPalettes((p) => ({
+      ...p,
+      [activeMode]: {
+        ...p[activeMode],
+        primary: preset.primary,
+        accent: preset.accent,
+      },
+    }));
   }
 
   const activePreset = ACCENT_PRESETS.find(
@@ -169,6 +194,73 @@ export function AppearanceForm({ initial }: { initial: ResolvedTheme }) {
       onSubmit={handleSubmit}
       style={{ display: "flex", flexDirection: "column", gap: 20 }}
     >
+      <section style={CARD_STYLE}>
+        <div className="mono-label" style={{ marginBottom: 4 }}>
+          — Mode
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: 22,
+            margin: "2px 0 14px",
+            fontWeight: 600,
+            color: "var(--ink)",
+          }}
+        >
+          Editing{" "}
+          <span style={{ color: "var(--pink)" }}>
+            {activeMode === "dark" ? "dark" : "light"}
+          </span>{" "}
+          mode
+        </h2>
+        <div
+          role="tablist"
+          aria-label="Theme mode"
+          style={{
+            display: "inline-flex",
+            border: "1px solid var(--hair)",
+            borderRadius: "var(--radius)",
+            overflow: "hidden",
+          }}
+        >
+          {(["light", "dark"] as const).map((m) => {
+            const active = activeMode === m;
+            return (
+              <button
+                key={m}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveMode(m)}
+                style={{
+                  background: active ? "var(--pink)" : "transparent",
+                  color: active ? "var(--cm-primary-fg)" : "var(--ink)",
+                  border: "none",
+                  padding: "8px 18px",
+                  fontFamily: "var(--mono)",
+                  fontSize: 11,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                }}
+              >
+                {m}
+              </button>
+            );
+          })}
+        </div>
+        <p
+          style={{
+            fontSize: 12,
+            color: "var(--ink-3)",
+            margin: "10px 0 0",
+          }}
+        >
+          Each mode keeps its own colour palette. Switch tabs to edit the
+          other.
+        </p>
+      </section>
+
       <section style={CARD_STYLE}>
         <div className="mono-label" style={{ marginBottom: 4 }}>
           — Accent palette

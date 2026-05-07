@@ -6,6 +6,7 @@ import { loadSiteSettings } from "@/lib/theme";
 import { listCoursesAdmin } from "@/lib/courses";
 import { AdminNavItem } from "./nav-item";
 import { SignOutButton } from "@/components/sign-out-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type AdminRoute =
   | "/admin"
@@ -164,7 +165,7 @@ async function AdminShell({ children }: { children: ReactNode }) {
               </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <Link
               href="/dashboard"
               className="btn btn-ghost"
@@ -176,6 +177,7 @@ async function AdminShell({ children }: { children: ReactNode }) {
               className="btn btn-ghost"
               style={{ fontSize: 11, padding: "6px 10px", flex: 1 }}
             />
+            <ThemeToggle size={30} />
           </div>
         </div>
       </aside>

@@ -16,6 +16,9 @@ const COLOR_KEYS: Array<keyof ThemeColors> = [
   "accentFg",
 ];
 
+const MODES = ["light", "dark"] as const;
+type Mode = (typeof MODES)[number];
+
 const COLOR_RE =
   /^(#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\([^()]*\)|[a-zA-Z]+)$/;
 
@@ -43,10 +46,16 @@ function readText(formData: FormData, name: string): string | null {
 export async function saveThemeAction(formData: FormData) {
   await requireAdmin();
 
-  const colors: Partial<ThemeColors> = {};
-  for (const key of COLOR_KEYS) {
-    const v = readColor(formData, `colors.${key}`);
-    if (v) colors[key] = v;
+  const colors: { [K in Mode]?: Partial<ThemeColors> } = {};
+  for (const mode of MODES) {
+    const palette: Partial<ThemeColors> = {};
+    for (const key of COLOR_KEYS) {
+      const v = readColor(formData, `colors.${mode}.${key}`);
+      if (v) palette[key] = v;
+    }
+    if (Object.keys(palette).length > 0) {
+      colors[mode] = palette;
+    }
   }
 
   const fonts = {
